@@ -3,31 +3,32 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PeakCut</title>
+<title>Clipverse</title>
 <link rel="icon" type="image/svg+xml" href="/brand/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Inter:wght@300&family=Archivo+Black&family=Anton&family=Poppins:wght@800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
 :root{
-  --brand:#FF8B33;--brand-press:#F27A1F;--brand-ink:#2A1A12;--brand-soft:#FFF2E8;--brand-line:#FFD9BC;--brand-deep:#A9480A;
-  --frame:#1E1612;--frame-2:#2C221D;--frame-line:rgba(255,255,255,.08);--frame-text:#F4EEEA;--frame-dim:#A99A91;
-  --bg:#FFFFFF;--muted:#F7F4F1;--line:#EEE8E4;--line-2:#E1D9D3;
-  --text:#211813;--dim:#6D6159;--faint:#A0948C;
-  --good:#0F8A57;--good-soft:#E6F6EE;--bad:#D3343F;--bad-soft:#FDECEE;--live:#E5323F;
-  --r-lg:16px;--r:12px;--r-sm:8px;
+  --frame:#181513;--frame-2:#211D1A;--frame-line:rgba(255,255,255,.07);--frame-text:#F2EDE8;--frame-dim:#9B9088;
+  --bg:#F8F5F0;--muted:#F0EBE5;--line:#E4DED6;--line-2:#DCD4CB;
+  --text:#1A1614;--dim:#6B635C;--faint:#9B9188;
+  --brand:#2BB6A0;--brand-press:#239E89;--brand-ink:#0E3D35;--brand-soft:#DFF4F0;--brand-line:#B6E3DA;
+  --accent:#E8723C;--accent-soft:#FDE8DF;
+  --good:#1A8F5E;--good-soft:#DFF3E9;--bad:#D64545;--bad-soft:#FDECEC;--live:#E5323F;
+  --r-lg:18px;--r:12px;--r-sm:8px;
   color-scheme:light;
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{height:100%}
-body{margin:0;background:var(--frame);color:var(--text);font:14px/1.5 "Geist","Segoe UI",system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden}
+body{margin:0;background:var(--frame);color:var(--text);font:14px/1.5 "Inter","Segoe UI",system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden}
 h1,h2,h3,h4,p{margin:0}
 button,input,select,textarea{font:inherit;color:inherit}
 svg{width:18px;height:18px;flex:none;fill:currentColor}
 ::selection{background:var(--brand-line)}
 :focus-visible{outline:2px solid var(--brand);outline-offset:2px}
-::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:#E2D9D7;border-radius:999px;border:3px solid #fff}
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:#DCD4CB;border-radius:999px;border:3px solid #F8F5F0}
 
 /* ---------- frame */
 .app{display:grid;grid-template-columns:240px minmax(0,1fr);height:100vh}
@@ -290,6 +291,16 @@ label.ck input{accent-color:var(--brand);margin:0}
 .composer-opts.open{grid-template-rows:1fr;opacity:1}
 .composer-opts>.og{min-height:0;overflow:hidden;padding:0 12px;transition:padding .32s ease}
 .composer-opts.open>.og{padding-bottom:12px}
+.composer-about{margin:10px 12px 0;padding:8px 12px;background:var(--muted);border-radius:var(--r)}
+.composer-about label{display:block;font-size:12px;font-weight:600;color:var(--dim);margin-bottom:4px}
+.composer-about textarea{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:var(--r);background:#fff;color:var(--text);padding:8px 10px;font-size:13px;font-family:inherit;resize:vertical}
+.composer-shape{margin:10px 12px 0;padding:10px 12px;background:var(--muted);border-radius:var(--r);display:flex;flex-direction:column;gap:10px}
+.composer-shape .sh-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.composer-shape .sh-l{font-size:12px;font-weight:600;color:var(--dim);display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+.composer-shape .seg{display:inline-flex;background:#fff;border:1px solid var(--line);border-radius:8px;padding:2px;gap:1px}
+.composer-shape .seg button{border:0;background:transparent;padding:5px 10px;border-radius:6px;font-size:12px;font-weight:600;color:var(--dim);cursor:pointer;transition:background-color .15s ease,color .15s ease}
+.composer-shape .seg button:hover{background:var(--muted)}
+.composer-shape .seg button[aria-pressed="true"]{background:var(--brand);color:#fff}
 /* attachments: link preview and files */
 .att{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s ease}
 .att.has{grid-template-rows:1fr}
@@ -540,6 +551,13 @@ img.av{object-fit:cover}
 .danger-card{border-color:#F3C9C4}
 .danger-card h2{color:var(--bad)}
 .clip-foot{display:flex;gap:4px;align-items:center;margin-top:auto;padding-top:8px}
+.social{margin:14px 0 4px;border:1px solid var(--line);border-radius:var(--r);background:var(--bg)}
+.social summary{cursor:pointer;padding:8px 12px;font-weight:600;font-size:13px;list-style:none;display:flex;align-items:center;gap:6px}
+.social summary::-webkit-details-marker{display:none}
+.social .soc{display:grid;grid-template-columns:90px 1fr;gap:2px 10px;padding:6px 12px;font-size:12px;align-items:center}
+.social .soc-l{color:var(--dim);text-transform:uppercase;letter-spacing:.04em;font-size:11px}
+.social .soc-v{display:flex;align-items:center;gap:6px;min-width:0}
+.social .soc-v span{flex:1;min-width:0;white-space:pre-wrap;word-break:break-word}
 
 /* ---------- live */
 .livecard{background:#fff;border:1px solid #F4C9CD;border-radius:var(--r);padding:20px;margin-bottom:28px}
@@ -813,7 +831,7 @@ dialog[open]{animation:fadein .16s ease}
 <body>
 <div class="app" id="app">
   <aside class="side" aria-label="Sidebar">
-    <div class="side-head"><img class="logo" src="/brand/logo-light.svg" alt="PeakCut"><img class="mark" src="/brand/favicon.svg" alt="PeakCut">
+    <div class="side-head"><img class="logo" src="/brand/logo-light.svg" alt="Clipverse"><img class="mark" src="/brand/favicon.svg" alt="Clipverse">
       <button class="icon-btn collapse" data-act="collapse" id="collapseBtn" aria-label="Collapse sidebar"></button></div>
     <nav class="nav" id="nav" aria-label="Main"></nav>
     <div class="side-foot" id="foot"></div>
@@ -899,8 +917,8 @@ const I = {
 const ic = n => `<svg viewBox="0 0 256 256" aria-hidden="true">${I[n]}</svg>`;
 const navIc = (n, v) => ic(S.view === v && I[n + "_f"] ? n + "_f" : n);
 const fmt = s => { s = Math.max(0, Math.round(s)); const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60); return (h ? h + ":" + String(m).padStart(2, "0") : m) + ":" + String(s % 60).padStart(2, "0"); };
-const clock = t => new Date(t * 1000).toLocaleString([], {weekday:"short", hour:"2-digit", minute:"2-digit"});
-const when = t => new Date(t * 1000).toLocaleString([], {month:"short", day:"numeric", hour:"2-digit", minute:"2-digit"});
+const clock = t => new Date(t * 1000).toLocaleString([], {weekday:"short", hour:"2-digit", minute:"2-digit", hour12:false});
+const when = t => new Date(t * 1000).toLocaleString([], {month:"short", day:"numeric", hour:"2-digit", minute:"2-digit", hour12:false});
 const opts = (map, val) => Object.entries(map).map(([k, v]) => `<option value="${esc(k)}"${String(k) === String(val) ? " selected" : ""}>${esc(v)}</option>`).join("");
 
 async function api(path, opt) {
@@ -934,15 +952,15 @@ function startTour() {
   if (S.view !== "overview") go("overview");
   // sel: what the step points at.  side: it lives in the sidebar (opened for the step on phones).  dock: where the card sits on phones.
   const steps = [
-    {t: "Welcome to PeakCut", x: "Long videos and live streams go in, captioned vertical clips come out. Here is a quick look around.",
+    {t: "Welcome to Clipverse", x: "Long videos and live streams go in, captioned vertical clips come out. Here is a quick look around.",
      chips: [["link", "Paste a link"], ["scissors", "Get clips", 1], ["radio", "Live streams"], ["send", "Post them"]]},
-    {t: "Start with any video", x: "Paste a YouTube, Twitch or Kick link here, or upload a file. PeakCut finds the best moments and makes each one a short with captions.",
+    {t: "Start with any video", x: "Paste a YouTube, Twitch or Kick link here, or upload a file. Clipverse finds the best moments and makes each one a short with captions.",
      sel: "#addform", dock: "bottom", chips: [["link", "YouTube"], ["link", "Twitch"], ["link", "Kick"], ["up", "Upload", 1]]},
     {t: "Your day at a glance", x: "Home shows what is recording, how many clips were made and posted today, and what is waiting to go out.",
      sel: "#ov .tiles", dock: "bottom", chips: [["radio", "Recording"], ["scissors", "Clips today", 1], ["send", "Posted"], ["clock", "Waiting"]]},
     {t: "Every video in one place", x: "All videos lists everything you have processed. Open a video to see its clips, trim them, change the captions or download them.",
      sel: '#nav [data-v="library"]', side: 1, dock: "bottom", chips: [["film", "All videos", 1], ["play", "Preview"], ["sliders", "Edit"], ["down", "Download"]]},
-    {t: "Add the creators you clip", x: "Give each creator a workspace with their channels. PeakCut can record them when they go live and clip the highlights as they happen.",
+    {t: "Add the creators you clip", x: "Give each creator a workspace with their channels. Clipverse can record them when they go live and clip the highlights as they happen.",
      sel: '#nav [data-act="newcreator"]', side: 1, dock: "bottom", chips: [["plusc", "New creator", 1], ["radio", "Record live"], ["bolt", "Clip highlights"]]},
     {t: "The AI picks the moments", x: "This shows which AI this server uses and how much it has worked today. Open it to see what the AI was used for.",
      sel: "#foot .ai-card", side: 1, dock: "top", chips: [["bolt", "AI", 1], ["chart", "See usage"]]},
@@ -1080,7 +1098,12 @@ const fmtK = n => (n = Number(n) || 0) >= 1e6 ? (n / 1e6).toFixed(1).replace(/\.
 function playerSrc(k, e) {
   if (!e) return "";
   if (k === "twitch") return `https://player.twitch.tv/?channel=${encodeURIComponent(e)}&parent=${location.hostname}&muted=true&autoplay=true`;
-  if (k === "youtube") return `https://www.youtube-nocookie.com/embed/${encodeURIComponent(e)}?autoplay=1&mute=1&playsinline=1`;
+  if (k === "youtube") {
+    // youtube.com/embed rather than youtube-nocookie.com: the cookieless domain is the one YouTube treats as a
+    // bot context and shows a "sign in to confirm you're not a bot" wall on.
+    const origin = encodeURIComponent(location.protocol + "//" + location.host);
+    return `https://www.youtube.com/embed/${encodeURIComponent(e)}?autoplay=1&mute=1&playsinline=1&rel=0&enablejsapi=1&origin=${origin}`;
+  }
   if (k === "kick") return `https://player.kick.com/${encodeURIComponent(e)}?muted=true&autoplay=true`;
   return "";
 }
@@ -1097,9 +1120,15 @@ function drawStream() {
   if (pl.dataset.src !== src) {           // only swap the player when the stream changes, never on a refresh
     pl.dataset.src = src;
     const ipHost = /^[\d.]+$|^\[/.test(location.hostname);
-    pl.innerHTML = k === "twitch" && ipHost
-      ? `<div class="noembed">${platLogo(k)}<b>Twitch only plays inside sites with a web address</b><span>It will play here once PeakCut is on its domain, or open PeakCut at localhost instead of ${esc(location.hostname)}.</span><a class="btn sm" href="${esc(p.channel)}" target="_blank" rel="noopener">Watch on Twitch ${ic("upright")}</a></div>`
-      : src ? `<iframe src="${src}" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen title="${PLAT[k].name} live stream"></iframe>` : "";
+    // YouTube live embeds are unreliable on localhost and on streams whose owners turned embedding off, and a blocked
+// iframe shows a dead box because its onerror can never fire (cross-origin). So YouTube gets a branded preview
+// panel with a direct link instead; Clipverse still records it and makes clips either way.
+    const ytBlock = `<div class="noembed">${platLogo("youtube")}<b>Watch this stream on YouTube</b><span>Clipverse is recording it in the background and will make clips as it goes. Open the stream in a tab to watch it live.</span><a class="btn sm" href="${esc(p.channel)}" target="_blank" rel="noopener">Watch on YouTube ${ic("upright")}</a></div>`;
+    pl.innerHTML = k === "youtube"
+      ? ytBlock
+      : (k === "twitch" && ipHost)
+        ? `<div class="noembed">${platLogo(k)}<b>Twitch only plays inside sites with a web address</b><span>It will play here once Clipverse is on its domain, or open Clipverse at localhost instead of ${esc(location.hostname)}.</span><a class="btn sm" href="${esc(p.channel)}" target="_blank" rel="noopener">Watch on Twitch ${ic("upright")}</a></div>`
+        : src ? `<iframe src="${src}" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen title="${PLAT[k].name} live stream"></iframe>` : "";
   }
   const stats = [p.viewers != null ? [fmtK(p.viewers), "watching"] : null, p.started ? [since(p.started), "live for"] : null,
                  p.followers ? [p.followers.split(" ")[0], p.followers.split(" ").slice(1).join(" ")] : null].filter(Boolean);
@@ -1110,7 +1139,7 @@ function drawStream() {
     ${stats.length ? `<div class="sstats">${stats.map(([v, l]) => `<div><b>${esc(v)}</b><span>${esc(l)}</span></div>`).join("")}</div>` : ""}
     <div class="cta">${rec
       ? `<button class="btn danger" data-act="stoplive" data-j="${esc(rec)}">${ic("stop")}Stop recording</button><small>Recording now. Clips appear below as they're made.</small>`
-      : `<button class="btn primary" data-act="golive" data-url="${esc(p.channel)}"><span class="rdot"></span>Record this stream</button><small>PeakCut watches it and clips the best moments as they happen.</small>`}</div>`);
+      : `<button class="btn primary" data-act="golive" data-url="${esc(p.channel)}"><span class="rdot"></span>Record this stream</button><small>Clipverse watches it and clips the best moments as they happen.</small>`}</div>`);
 }
 function liveOn(c) { return Object.entries(c.profiles || {}).filter(([k, p]) => p.live && c.channels?.[k] === p.channel).sort(([, p]) => p.channel === c.channel ? -1 : 1); }
 function statusBadge(c) {
@@ -1217,15 +1246,15 @@ async function openFeedback(kind = "bug", context = "") {
 }
 function updateHow() {
   const up = S.status?.update, d = $("#formdlg"); if (!up || d.open) return;
-  const ai = "Update this PeakCut folder to the latest version from GitHub (git pull), keep my .env and data folder as they are, install any new requirements, and restart PeakCut.";
+  const ai = "Update this Clipverse folder to the latest version from GitHub (git pull), keep my .env and data folder as they are, install any new requirements, and restart Clipverse.";
   const cmd = (label, text) => `<h3>${label}</h3><div class="cmd"><code>${esc(text)}</code><button class="btn sm" type="button" data-act="copytext" data-t="${esc(text)}">${ic("copy")}Copy</button></div>`;
-  d.innerHTML = `<form method="dialog" class="dlg upd"><h2>${up.restart ? "The new version is ready" : "A new version of PeakCut is out"}</h2>
-    <p class="help">${up.restart ? "The new files are already in the PeakCut folder. <b>Close PeakCut and start it again</b> to use them." : `You're on <b>${esc(up.current)}</b>. ${up.behind ? `${up.behind} update${up.behind === 1 ? " has" : "s have"} been added since.` : "Newer changes have been added since."}`} Your settings, keys and clips stay as they are.</p>
+  d.innerHTML = `<form method="dialog" class="dlg upd"><h2>${up.restart ? "The new version is ready" : "A new version of Clipverse is out"}</h2>
+    <p class="help">${up.restart ? "The new files are already in the Clipverse folder. <b>Close Clipverse and start it again</b> to use them." : `You're on <b>${esc(up.current)}</b>. ${up.behind ? `${up.behind} update${up.behind === 1 ? " has" : "s have"} been added since.` : "Newer changes have been added since."}`} Your settings, keys and clips stay as they are.</p>
     ${up.notes.length ? `<ul>${up.notes.map(n => `<li>${esc(n.title)} <small>${esc(n.date)}</small></li>`).join("")}</ul>` : ""}
-    ${up.restart ? "" : cmd("Ask your AI coding assistant (Claude, Cursor, Copilot...)", ai) + cmd("Or run it yourself, in the PeakCut folder", "git pull && pip install -r requirements.txt")}
-    <p class="sub">${up.restart ? "" : "Then stop PeakCut and start it again. With Docker, run <code>git pull && docker compose up -d --build</code> instead. "}<a class="lnk" href="${esc(up.url)}" target="_blank" rel="noopener">See every change on GitHub</a></p>
+    ${up.restart ? "" : cmd("Ask your AI coding assistant (Claude, Cursor, Copilot...)", ai) + cmd("Or run it yourself, in the Clipverse folder", "git pull && pip install -r requirements.txt")}
+    <p class="sub">${up.restart ? "" : "Then stop Clipverse and start it again. With Docker, run <code>git pull && docker compose up -d --build</code> instead. "}<a class="lnk" href="${esc(up.url)}" target="_blank" rel="noopener">See every change on GitHub</a></p>
     <div class="dlg-foot"><button class="btn" value="later">Remind me next version</button><button class="btn primary" value="ok" autofocus>Got it</button></div></form>`;
-  d.onclose = () => { if (d.returnValue === "later") { try { localStorage.setItem("peakcut_update_seen", up.latest); } catch {} drawShell(); } };
+  d.onclose = () => { if (d.returnValue === "later") { try { localStorage.setItem("clipverse_update_seen", up.latest); } catch {} drawShell(); } };
   d.returnValue = "ok"; d.showModal();
 }
 function greeting() { const h = new Date().getHours(); return h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening"; }
@@ -1247,6 +1276,7 @@ function drawShell() {  const nav = (v, icon, label, extra = "") => `<button cla
   put($("#nav"), nav("overview", navIc("home", "overview"), "Home") +
     nav("library", navIc("film", "library"), "All videos", (() => { const w = S.jobs.filter(j => ["queued", "running"].includes(j.status)).length;
       return w ? `<span class="working" title="${w} working now"><i></i>${w} working</span>` : S.jobs.length ? `<span class="count">${S.jobs.length}</span>` : ""; })()) +
+    nav("posted", navIc("check", "posted"), "Posted") +
     `<h4><span>Creators</span></h4>` +
     S.creators.map(c => nav("c:" + c.id, cav(c), c.name,
       c.live_job ? `<span class="sb-tag rec" title="Recording now"><i></i>Rec</span>`
@@ -1262,10 +1292,11 @@ function drawShell() {  const nav = (v, icon, label, extra = "") => `<button cla
       <button class="icon-btn bell" data-act="bell" title="Notifications" aria-label="Notifications${S.status.unread ? `, ${S.status.unread} new` : ""}" aria-haspopup="dialog">${ic("bell")}${S.status.unread ? `<span class="dotn">${S.status.unread > 9 ? "9+" : S.status.unread}</span>` : ""}</button></div>` : ""));
   const c = creator();
   const recording = S.creators.filter(x => x.live_job).length;
-  let title = {overview:"Home", library:"All videos", settings:"Settings", usage:"AI usage"}[S.view] || "", sub = "", act = "";
+  let title = {overview:"Home", library:"All videos", posted:"Posted Videos", settings:"Settings", usage:"AI usage"}[S.view] || "", sub = "", act = "";
   if (S.view === "usage") sub = "What the AI has been used for.";
   if (S.view === "overview") sub = `${greeting()}. ${S.creators.length} creator${S.creators.length === 1 ? "" : "s"}${recording ? `, ${recording} recording now` : ""}.`;
   if (S.view === "library") sub = "Every video and recording, across all creators.";
+  if (S.view === "posted") sub = "Published content tracked separately from the active publishing queue.";
   if (S.view === "settings") sub = (S.status.accounts === false ? "Your AI key and connected apps." : "Your profile, security and connected apps.");
   let pic = "", subHtml = null, tabs = "";
   if (c) {
@@ -1279,20 +1310,18 @@ function drawShell() {  const nav = (v, icon, label, extra = "") => `<button cla
                      : `<button class="btn primary" data-act="golive"><span class="rdot"></span>${liveOn(c).length ? "Record live stream" : "Start recording"}</button>`;
   }
   if (S.view === "overview" || S.view === "library") {
-    const L = S.status.links || {};
-    act = (L.repo ? `<a class="btn" href="${esc(L.repo)}" target="_blank" rel="noopener" title="Star PeakCut on GitHub">${ic("github")}<span>Star<span class="long"> on GitHub</span></span></a>` : "")
-        + (L.follow ? `<a class="btn primary" href="${esc(L.follow)}" target="_blank" rel="noopener" title="Follow the maker of PeakCut on Instagram">${ic("instagram")}Follow me</a>` : "");
+    act = "";
   }
   const me = S.status.user;
   const kk = S.status.ai;
   const up = S.status.update;
   let upSeen = "";
-  try { upSeen = localStorage.getItem("peakcut_update_seen") || ""; } catch {}
-  const upBar = up && up.latest !== upSeen ? `<div class="vb" role="status">${ic("up")}<span>${up.restart ? "<b>The new version is downloaded.</b> Close PeakCut and start it again to use it." : `A new version of PeakCut is out${up.behind ? `: <b>${up.behind} update${up.behind === 1 ? "" : "s"}</b> since yours` : ""}.`}</span>
+  try { upSeen = localStorage.getItem("clipverse_update_seen") || ""; } catch {}
+  const upBar = up && up.latest !== upSeen ? `<div class="vb" role="status">${ic("up")}<span>${up.restart ? "<b>The new version is downloaded.</b> Close Clipverse and start it again to use it." : `A new version of Clipverse is out${up.behind ? `: <b>${up.behind} update${up.behind === 1 ? "" : "s"}</b> since yours` : ""}.`}</span>
     <button class="btn sm primary" data-act="updhow">${up.restart ? "What's new" : "How to update"}</button><button class="btn sm ghost" data-act="updlater" aria-label="Hide until the next version">Later</button></div>` : "";
-  const toolBar = S.status.no_ffmpeg ? `<div class="vb" role="alert">${ic("warn")}<span><b>PeakCut can't make clips yet: ffmpeg isn't installed on this computer.</b> Open a terminal, run <code>winget install Gyan.FFmpeg</code> (Mac: <code>brew install ffmpeg</code>, Linux: <code>sudo apt install ffmpeg</code>), then close PeakCut and start it again.</span></div>` : "";
+  const toolBar = S.status.no_ffmpeg ? `<div class="vb" role="alert">${ic("warn")}<span><b>Clipverse can't make clips yet: ffmpeg isn't installed on this computer.</b> Open a terminal, run <code>winget install Gyan.FFmpeg</code> (Mac: <code>brew install ffmpeg</code>, Linux: <code>sudo apt install ffmpeg</code>), then close Clipverse and start it again.</span></div>` : "";
   const aiBar = !toolBar && S.status.ai?.problem && me?.is_admin && S.view !== "settings" ? `<div class="vb" role="status">${ic("warn")}<span><b>The AI isn't answering.</b> ${esc(S.status.ai.problem)} Until then, clips are picked by loudness.</span><button class="btn sm primary" data-act="go" data-v="settings" data-tab="ai">Open AI settings</button></div>` : "";
-  const diskBar = !toolBar && S.status.disk_full && S.view !== "settings" ? `<div class="vb" role="alert">${ic("warn")}<span><b>The drive PeakCut saves to is almost full, so it can't take new videos.</b> Free up space on it, or move PeakCut's folder to a bigger drive.</span>${me?.is_admin ? `<button class="btn sm primary" data-act="go" data-v="settings" data-tab="storage">Open Storage</button>` : ""}</div>` : "";
+  const diskBar = !toolBar && S.status.disk_full && S.view !== "settings" ? `<div class="vb" role="alert">${ic("warn")}<span><b>The drive Clipverse saves to is almost full, so it can't take new videos.</b> Free up space on it, or move Clipverse's folder to a bigger drive.</span>${me?.is_admin ? `<button class="btn sm primary" data-act="go" data-v="settings" data-tab="storage">Open Storage</button>` : ""}</div>` : "";
   put($("#vbanner"), toolBar ? toolBar : diskBar ? diskBar : aiBar ? aiBar : upBar ? upBar : me && me.verified === false ? `<div class="vb" role="status">${ic("warn")}<span>Confirm your email to start clipping. We sent a link to <b>${esc(me.email)}</b>.</span><button class="btn sm" data-act="resendverify">Send a new link</button></div>`
     : kk && kk.ready === false && S.view !== "usage" ? `<div class="vb" role="status">${ic("bolt")}<span>${me?.is_admin ? "Add your AI key to let the AI pick clips and write titles. Until then, clips are picked by loudness." : "The AI isn't set up on this server yet, so clips are picked by loudness."}</span>${me?.is_admin && S.view !== "settings" ? `<button class="btn sm primary" data-act="go" data-v="settings" data-tab="ai">${ic("plus")}Add AI key</button>` : ""}</div>` : "");
   put($("#tpic"), pic); $("#tpic").classList.toggle("live", !!(c && (c.live_job || liveOn(c).length)));
@@ -1332,6 +1361,7 @@ function go(v, tab, fromHistory) {
       <p>Paste a link or drop in videos. You get captioned shorts back.</p><div id="add"></div></section>` : "";
   if (v === "overview") view.innerHTML = `<div id="ov"></div>`;
   else if (v === "library") view.innerHTML = `<div id="add"></div><div id="jobs"></div>`;
+  else if (v === "posted") view.innerHTML = `<div id="posted"></div>`;
   else if (v === "settings") view.innerHTML = `<div id="sform"></div>`;
   else if (v === "usage") { view.innerHTML = `<div id="usage"></div>`; loadUsage(); }
   else view.innerHTML = `<div id="stream"></div><div id="cbody"></div>`;   // the live player stays put across tabs: no restart, no rebuffer
@@ -1341,6 +1371,7 @@ function go(v, tab, fromHistory) {
   if (v.startsWith("c:")) setTab(S.ctab);
   $("#main").scrollTo(0, 0); render();
   if (v === "overview") loadOverview();
+  if (v === "posted") loadPosted();
 }
 function setTab(t) {
   S.ctab = t;
@@ -1366,6 +1397,30 @@ function drawAdd(variant) {
       <span class="grow"></span><span class="hint">or drop a video file here</span>
       <button class="btn primary" id="goBtn">${ic("scissors")}Make clips</button>
     </div>
+    <div class="composer-about">
+      <label for="o_about">${ic("note")}About this video <span class="muted">(optional)</span></label>
+      <textarea id="o_about" placeholder="Who is this for? Who speaks? What niche or angle should the clips lean into?" rows="2"></textarea>
+    </div>
+    <div class="composer-shape">
+      <div class="sh-row">
+        <span class="sh-l">${ic("frame")}Aspect ratio</span>
+        <div class="seg" role="group" aria-label="Aspect ratio">
+          ${ASPECTS.map(([k, lbl]) => `<button type="button" data-seg="o_aspect" data-v="${k}" aria-pressed="${k === "9:16" ? "true" : "false"}">${lbl}</button>`).join("")}
+        </div>
+      </div>
+      <div class="sh-row">
+        <span class="sh-l">${ic("clock")}Clip length</span>
+        <div class="seg" role="group" aria-label="Clip length">
+          ${LENGTHS.map(([k, lbl]) => `<button type="button" data-seg="o_len" data-v="${k}" aria-pressed="${k === "30-60s" ? "true" : "false"}">${lbl}</button>`).join("")}
+        </div>
+      </div>
+      <div class="sh-row">
+        <span class="sh-l">${ic("sliders")}Color grade</span>
+        <div class="seg" role="group" aria-label="Color grade">
+          ${GRADES.map(([k, lbl]) => `<button type="button" data-seg="o_grade" data-v="${k}" aria-pressed="${k === "none" ? "true" : "false"}">${lbl}</button>`).join("")}
+        </div>
+      </div>
+    </div>
     <div class="composer-opts" inert><div class="og">
       <div class="ob wide"><div class="ot">Clips</div><div class="nsteps">
         ${stepper("o_max", "How many", c?.max_clips ?? 6, 1, 20, 1, "")}
@@ -1384,11 +1439,25 @@ function drawAdd(variant) {
   drawAtt();
 }
 const LAYOUT_SHORT = {blur:"Blurred fill", zoom:"Zoomed in", crop:"Fill screen"};
-const CAP_LOOK = {bounce:{font:"'Archivo Black'", hl:"#FFFF00", up:true}, hype:{font:"Anton", hl:"#FF3C3C", up:true}, clean:{font:"Poppins", hl:"#6BD7FF", up:false, w:800}};
+// Output canvas and clip length presets. Both are validated against the same allowlists on the server, so a
+// value that slips through the UI still falls back to the default.
+const ASPECTS = [["9:16","9:16"],["4:5","4:5"],["1:1","1:1"],["16:9","16:9"]];
+const LENGTHS = [["15-30s","15-30s"],["30-60s","30-60s"],["60-90s","60-90s"],["90-180s","1.5-3m"]];
+// Color grading presets. Only the keys in this list can reach the ffmpeg filtergraph; anything else becomes
+// "none" (no filter), so the command stays byte-for-byte identical to before.
+const GRADES = [["none","None"],["vibrant","Vibrant Pop"],["cinema","Warm Cinema"],["crisp","Crisp Contrast"]];
+const CAP_LOOK = {
+  bounce: {font: "'Archivo Black'", hl: "#FFFF00", up: true},
+  hype: {font: "Anton", hl: "#FF3C3C", up: true},
+  clean: {font: "Poppins", hl: "#6BD7FF", up: false, w: 800},
+  karaoke: {font: "Poppins", hl: "#FFE600", up: true, w: 800},
+  boxed: {font: "Anton", hl: "#FF3C3C", up: true, box: true}
+};
 function capPrev(k) {
-  const s = CAP_LOOK[k] || {font:"inherit", hl:"#FF8B33", up:true};
+  const s = CAP_LOOK[k] || {font: "inherit", hl: "#FF8B33", up: true};
   const t = s.up ? ["CLIP", "THIS"] : ["Clip", "this"];
-  return `<span class="cap-prev" style="font-family:${s.font},sans-serif;font-weight:${s.w || 400}">${t[0]}&nbsp;<b style="color:${s.hl}">${t[1]}</b></span>`;
+  const boxStyle = s.box ? "background:#111;padding:2px 6px;border-radius:4px;" : "";
+  return `<span class="cap-prev" style="font-family:${s.font},sans-serif;font-weight:${s.w || 400};${boxStyle}">${t[0]}&nbsp;<b style="color:${s.hl}">${t[1]}</b></span>`;
 }
 function picker(id, aria, items, val) {
   const cur = items.find(x => String(x.v) === String(val)) || items[0];
@@ -1441,7 +1510,16 @@ function jobOptions() {
   const o = {max_clips:n("#o_max"), min_len:n("#o_min"), max_len:n("#o_maxlen"), style:$("#o_style").value, layout:$("#o_layout").value, quality:n("#o_quality")};
   if (n("#o_from") !== null) o.range_start = n("#o_from") * 60;
   if (n("#o_to") !== null) o.range_end = n("#o_to") * 60;
+  o.aspect_ratio = $("#o_aspect").value;
+  o.length_preset = $("#o_len").value;
+  o.color_grade = $("#o_grade").value;
   return o;
+}
+function jobContext() {
+  // The optional "About this video" note. It is sent with the job so the AI knows the niche, the speaker and
+  // the audience; with nothing typed the video is judged exactly as before.
+  const t = $("#o_about").value.trim();
+  return t ? {context: t} : {};
 }
 /* ---------- attachments: nothing starts until Make clips is pressed.
    Each page keeps its own draft (Home, All videos and every creator), so a link typed for one creator never
@@ -1522,7 +1600,7 @@ async function lookUp(u) {
     if (e instanceof TypeError) {           // the request itself dropped (network blip): try once more quietly
       await new Promise(r => setTimeout(r, 800));
       try { return await api("/api/preview?url=" + encodeURIComponent(u)); }
-      catch (e2) { throw new Error(e2 instanceof TypeError ? "Couldn't reach PeakCut to check that link. Check your connection and paste it again." : e2.message); }
+      catch (e2) { throw new Error(e2 instanceof TypeError ? "Couldn't reach Clipverse to check that link. Check your connection and paste it again." : e2.message); }
     }
     throw e;
   }
@@ -1568,7 +1646,7 @@ document.addEventListener("click", e => {
 // and a piece that fails is simply sent again. The bar shows the whole file.
 async function sendBig(f, who) {
   const file = f.file;
-  const s = await send("/api/upload/start", {name: file.name, size: file.size, options: jobOptions(), creator: who});
+  const s = await send("/api/upload/start", {name: file.name, size: file.size, options: jobOptions(), creator: who, ...jobContext()});
   const sent = new Array(s.parts).fill(0);
   const show = () => { f.pct = Math.min(99, Math.round(sent.reduce((a, b) => a + b, 0) / file.size * 100)); drawAtt(); };
   const put = i => new Promise((ok, fail) => {
@@ -1610,6 +1688,7 @@ function sendFile(f, who) {
   return new Promise((ok, fail) => {
     const x = new XMLHttpRequest(), fd = new FormData();
     fd.append("file", f.file); fd.append("options", JSON.stringify(jobOptions())); fd.append("creator", who);
+    fd.append("context", $("#o_about").value.trim());
     x.open("POST", "/api/upload");
     x.upload.onprogress = e => { if (e.lengthComputable) { f.pct = Math.round(e.loaded / e.total * 100); drawAtt(); } };
     x.onload = () => {
@@ -1639,10 +1718,10 @@ async function makeClips() {
   }
   A.busy = true; drawAtt();
   let started = 0, failed = 0;
-  const who = targetCreator(), opts = jobOptions();
+  const who = targetCreator(), opts = jobOptions(), ctx = jobContext();
   for (const l of A.links.filter(x => x.state === "ok")) {
     l.sending = true; drawAtt();
-    try { await send("/api/jobs", {url: l.url, options: opts, creator: who}); l.state = "done"; started++; }
+    try { await send("/api/jobs", {url: l.url, options: opts, creator: who, ...ctx}); l.state = "done"; started++; }
     catch (e) { l.state = "bad"; l.msg = e.message; failed++; }
     l.sending = false; drawAtt();
   }
@@ -1669,6 +1748,20 @@ function postPills(c) {
     const txt = `${esc(p.account_name)} · ${p.status === "scheduled" ? clock(p.due_at) : p.status}`;
     return p.url ? `<a class="pill ${cls}" href="${esc(p.url)}" target="_blank" rel="noopener">${txt}</a>` : `<span class="pill ${cls}" title="${esc(p.error || "")}">${txt}</span>`;
   }).join("");
+}
+function socialHtml(c) {
+  // The social metadata the AI wrote for this clip when the creator typed an "About this video" note.
+  // Older clips and loudness-only picks do not have these keys, so nothing extra shows for them.
+  const yt = c.yt_title || "", desc = c.yt_description || "", ig = c.ig_caption || "";
+  const tags = (c.hashtags || []).map(h => `#${h}`).join(" ");
+  if (!yt && !desc && !ig && !tags) return "";
+  return `<details class="social" open>
+    <summary>${ic("note")}Social media metadata</summary>
+    ${yt ? `<div class="soc"><div class="soc-l">YouTube title</div><div class="soc-v"><span>${esc(yt)}</span><button class="btn sm icon ghost" data-copy="${esc(yt)}" title="Copy">${ic("copy")}</button></div></div>` : ""}
+    ${desc ? `<div class="soc"><div class="soc-l">YouTube description</div><div class="soc-v"><span>${esc(desc)}</span><button class="btn sm icon ghost" data-copy="${esc(desc)}" title="Copy">${ic("copy")}</button></div></div>` : ""}
+    ${ig ? `<div class="soc"><div class="soc-l">Instagram caption</div><div class="soc-v"><span>${esc(ig)}</span><button class="btn sm icon ghost" data-copy="${esc(ig)}" title="Copy">${ic("copy")}</button></div></div>` : ""}
+    ${tags ? `<div class="soc"><div class="soc-l">Hashtags</div><div class="soc-v"><span>${esc(tags)}</span><button class="btn sm icon ghost" data-copy="${esc(tags)}" title="Copy">${ic("copy")}</button></div></div>` : ""}
+  </details>`;
 }
 function clipHtml(j, c) {
   const m = `/media/${j.id}/`, a = `data-j="${j.id}" data-c="${esc(c.id)}"`;
@@ -1729,10 +1822,20 @@ function jobHtml(j) {
                 j.took ? "made in " + fmt(j.took) : "", j.kind === "live" ? "recording, " + j.stage.toLowerCase() : ""].filter(Boolean).map(esc).join(" · ");
   const pic = j.thumb ? `<img src="/media/${esc(j.id)}/thumb.jpg" alt="" loading="lazy">` : ic(j.source?.type === "file" ? "film" : "link");
   return `<div class="job-head"><div class="jt"><span class="jthumb">${pic}${j.duration ? `<span class="du">${fmt(j.duration)}</span>` : ""}</span><div style="min-width:0"><h3>${esc(j.title || j.source.name)}</h3><p class="sub">${meta}</p></div></div>
-      <div class="row" style="flex-wrap:nowrap;gap:4px">${busy ? "" : `
-        ${j.clips.some(c => c.status === "done") ? `<button class="btn sm icon ghost" data-act="dlall" data-j="${j.id}" title="Download all clips of this video" aria-label="Download all clips of this video">${ic("down")}</button>` : ""}
-        <button class="btn sm icon ghost" data-act="deljob" data-j="${j.id}" title="Delete" aria-label="Delete this video and its clips">${ic("trash")}</button>
-        <label class="selck" title="Select this video and its clips"><input type="checkbox" data-sel="j:${j.id}" ${sel().has("j:" + j.id) ? "checked" : ""} aria-label="Select this video"></label>`}</div></div>
+      <div class="row" style="flex-wrap:nowrap;gap:4px">
+        ${busy ? `
+          ${j.stage === "Paused" ? `
+            <button class="btn sm primary" data-act="resumejob" data-j="${j.id}" title="Resume processing">${ic("play")}Resume</button>
+          ` : `
+            <button class="btn sm" data-act="pausejob" data-j="${j.id}" title="Pause processing">${ic("pause")}Pause</button>
+          `}
+          <button class="btn sm danger" data-act="stopjob" data-j="${j.id}" title="Stop processing and keep clips made so far">${ic("stop")}Stop</button>
+        ` : `
+          ${j.clips.some(c => c.status === "done") ? `<button class="btn sm icon ghost" data-act="dlall" data-j="${j.id}" title="Download all clips of this video" aria-label="Download all clips of this video">${ic("down")}</button>` : ""}
+          <button class="btn sm icon ghost" data-act="deljob" data-j="${j.id}" title="Delete" aria-label="Delete this video and its clips">${ic("trash")}</button>
+          <label class="selck" title="Select this video and its clips"><input type="checkbox" data-sel="j:${j.id}" ${sel().has("j:" + j.id) ? "checked" : ""} aria-label="Select this video"></label>
+        `}
+      </div></div>
     ${busy ? `<div class="bar"><i style="width:${Math.round(j.progress * 100)}%"></i></div><p class="sub">${esc(j.stage)} · ${Math.round(j.progress * 100)}%</p>` : ""}
     ${j.status === "done" && !j.clips.length ? `<p class="sub">${esc(j.stage)}</p>` : ""}
     ${j.error ? `<div class="err">${esc(j.error)}<button class="rep" data-act="report" data-ctx="${esc("Video failed: " + (j.title || j.source.name || "") + " | " + j.error)}">Report this</button></div>` : ""}${j.ai?.note ? `<p class="sub">${esc(j.ai.note)}</p>` : ""}
@@ -1883,6 +1986,24 @@ function drawLog() {
 
 /* ============================================================ overview */
 async function loadOverview() { try { S.overview = await api("/api/overview"); } catch { return; } drawOverview(); }
+document.addEventListener("change", async e => {
+  const t = e.target;
+  if (!t.dataset.sched) return;
+  const due = t.value;
+  if (!due) return;
+  // `datetime-local` gives a wall-clock time, but JS Date treats it as UTC. Parse the parts as the
+  // user's local timezone so the timestamp actually means what the user picked.
+  const m = due.match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})/);
+  if (!m) { toast("Could not read that time. Try again.", "bad"); return; }
+  const [, y, mo, d, h, mi] = m.map(Number);
+  const dueAt = new Date(y, mo - 1, d, h, mi).getTime() / 1000;
+  if (isNaN(dueAt) || dueAt <= Date.now() / 1000) { toast("The new time must be in the future.", "bad"); return; }
+  try {
+    await send(`/api/posts/${t.dataset.sched}/reschedule`, {due_at: dueAt});
+    toast("Scheduled time updated.", "ok");
+    loadOverview();
+  } catch (err) { toast(err.message, "bad"); }
+});
 function barChart(daily) {
   const W = 720, H = 230, pl = 30, pb = 28, pt = 12, n = daily.length, ch = H - pt - pb;
   const peak = Math.max(1, ...daily.map(d => Math.max(d.clips, d.posted)));
@@ -1929,7 +2050,7 @@ function drawOverview() {
         ${barChart(o.daily || [])}</div>
       ${aiCard()}
     </div>
-    ${steps.length ? `<div class="card"><div class="card-head"><div><h2>Next steps</h2><p class="sub">Finish setting up PeakCut</p></div></div>
+    ${steps.length ? `<div class="card"><div class="card-head"><div><h2>Next steps</h2><p class="sub">Finish setting up Clipverse</p></div></div>
       <div class="steps across">${steps.map((x, i) => `<button class="step" data-act="step" data-to="${esc(x[2])}"><span class="n">${i + 1}</span><span><b>${esc(x[0])}</b><span class="d">${esc(x[1])}</span></span>${ic("arrowr")}</button>`).join("")}</div></div>` : ""}
     <div class="card"><div class="card-head"><div><h2>Creators</h2><p class="sub">Each creator's status and results</p></div></div>
       ${o.creators.length ? `<div class="scroll"><table><tr><th>Creator</th><th>Status</th><th>Auto-post</th><th class="num">Clips today</th><th class="num">Posted today</th><th class="num">Waiting</th><th class="num">Failed</th><th class="num">Views</th><th class="num">Est. $</th></tr>
@@ -1938,8 +2059,16 @@ function drawOverview() {
     <div class="card"><div class="card-head"><div><h2>Post queue</h2><p class="sub">${o.paused ? "Paused. Recording and clipping carry on; nothing is posted." : "Queued clips go out at their scheduled time."}</p></div>
         <button class="btn ${o.paused ? "primary" : ""}" data-act="pause">${ic(o.paused ? "play" : "pause")}${o.paused ? "Resume posting" : "Pause all posting"}</button></div>
       ${o.posts.length ? `<div class="scroll"><table class="stack"><tr><th>When</th><th>Clip</th><th>Creator</th><th>Account</th><th class="num">Views</th><th></th></tr>
-      ${o.posts.map(p => `<tr><td data-l="Status">${pst(p)}</td><td data-l="Clip" class="c-main">${p.url ? `<a class="lnk" href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.title)}</a>` : esc(p.title)}${p.error ? `<div class="err" style="margin:2px 0 0">${esc(p.error)}</div>` : ""}</td><td data-l="Creator">${esc(p.creator_name || "None")}</td><td data-l="Account">${esc(p.account_name)}</td><td data-l="Views" class="num">${p.views ?? "–"}</td>
-        <td class="c-act" style="text-align:right">${p.status === "scheduled" ? `<button class="btn sm" data-act="pcancel" data-id="${p.id}">Cancel</button>` : p.status === "failed" ? `<button class="btn sm" data-act="pretry" data-id="${p.id}">Retry</button>` : ""}</td></tr>`).join("")}</table></div>`
+      ${o.posts.map(p => {
+        const isScheduled = p.status === "scheduled";
+        const due = p.due_at ? new Date(p.due_at * 1000) : null;
+        const dueStr = due ? due.toISOString().slice(0, 16) : "";
+        const whenHtml = isScheduled && due
+          ? `<input type="datetime-local" value="${dueStr}" data-sched="${p.id}" style="width:160px; font-size:12px;" title="Change schedule time">`
+          : pst(p);
+        return `<tr><td data-l="Status">${whenHtml}</td><td data-l="Clip" class="c-main">${p.url ? `<a class="lnk" href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.title)}</a>` : esc(p.title)}${p.error ? `<div class="err" style="margin:2px 0 0">${esc(p.error)}</div>` : ""}</td><td data-l="Creator">${esc(p.creator_name || "None")}</td><td data-l="Account">${esc(p.account_name)}</td><td data-l="Views" class="num">${p.views ?? "–"}</td>
+        <td class="c-act" style="text-align:right">${isScheduled ? `<button class="btn sm" data-act="pcancel" data-id="${p.id}">Cancel</button>` : p.status === "failed" ? `<button class="btn sm" data-act="pretry" data-id="${p.id}">Retry</button>` : ""}</td></tr>`;
+      }).join("")}</table></div>`
       : `<p class="help">Nothing queued or posted yet.</p>`}</div>`);
 }
 
@@ -1948,6 +2077,86 @@ async function loadUsage() {
   try { S.usage = await api("/api/usage"); } catch { return; }
   S.status.ai = {...S.status.ai, ready: S.usage.ready, provider: S.usage.provider, model: S.usage.model, today_calls: S.usage.today_calls, today_tokens: S.usage.today_tokens};
   drawShell(); drawUsage();
+}
+
+/* ============================================================ posted videos */
+async function loadPosted() {
+  try {
+    const q = S.postedQ || {};
+    const p = new URLSearchParams({page: q.page || 1, per: q.per || 25});
+    if (q.q) p.set("q", q.q);
+    if (q.platform) p.set("platform", q.platform);
+    if (q.creator) p.set("creator", q.creator);
+    if (q.sort) p.set("sort", q.sort);
+    S.posted = await api("/api/posts/posted?" + p);
+  } catch { return; }
+  drawPosted();
+}
+
+function postedFmt(t) {
+  return new Date((t || 0) * 1000).toLocaleString([], {day:"numeric", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit", hour12:false});
+}
+
+function drawPosted() {
+  const p = S.posted, box = $("#posted"); if (!p || !box) return;
+  const rows = (p.rows || []).map(r => {
+    const link = r.url ? `<a class="lnk" href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.title)}</a>` : esc(r.title);
+    return `<tr>
+      <td class="sub">${postedFmt(r.posted_at)}</td>
+      <td data-l="Clip" class="c-main">${link}</td>
+      <td data-l="Creator">${esc(r.creator_name || "None")}</td>
+      <td data-l="Account">${esc(r.account_name)}</td>
+      <td data-l="Views" class="num">${r.views ?? "–"}</td>
+      <td class="c-act" style="text-align:right"><button class="btn sm" data-act="prefresh" data-id="${r.id}" title="Refresh views from the platform">Refresh views</button></td>
+    </tr>`;
+  }).join("") || `<tr><td colspan="6" class="help">No posted clips yet.</td></tr>`;
+  const page = p.page || 1, pages = p.pages || 1, per = p.per || 25;
+  const pager = pages > 1 ? `<div class="pager">
+    <button class="btn sm" data-act="ppage" data-p="${page - 1}" ${page <= 1 ? "disabled" : ""}>Previous</button>
+    <span class="sub">Page ${page} of ${pages} · ${p.total} clips</span>
+    <button class="btn sm" data-act="ppage" data-p="${page + 1}" ${page >= pages ? "disabled" : ""}>Next</button>
+  </div>` : "";
+  const q = S.postedQ || {};
+  const creatorOpts = (S.creators || []).map(c => `<option value="${esc(c.id)}" ${q.creator === c.id ? "selected" : ""}>${esc(c.name)}</option>`).join("");
+  const platformOpts = (["youtube","instagram","tiktok"].map(k => `<option value="${k}" ${q.platform === k ? "selected" : ""}>${PLAT[k].name}</option>`)).join("");
+  box.innerHTML = `<div class="card"><div class="card-head"><div><h2>Posted Videos</h2><p class="sub">Published content tracked separately from the active publishing queue.</p></div>
+        <button class="btn sm primary" data-act="prefreshall">Refresh all views</button></div>
+      <div class="filters">
+        <input type="search" id="pq" placeholder="Search title or account" value="${esc(q.q || "")}" style="width:220px">
+        <select id="pplatform">${platformOpts}</select>
+        <select id="pcreator">${creatorOpts}</select>
+        <select id="psort">
+          <option value="newest" ${q.sort === "newest" ? "selected" : ""}>Newest first</option>
+          <option value="oldest" ${q.sort === "oldest" ? "selected" : ""}>Oldest first</option>
+          <option value="views_desc" ${q.sort === "views_desc" ? "selected" : ""}>Highest views</option>
+          <option value="views_asc" ${q.sort === "views_asc" ? "selected" : ""}>Lowest views</option>
+        </select>
+        <select id="pper">
+          <option value="10" ${per === 10 ? "selected" : ""}>10</option>
+          <option value="25" ${per === 25 ? "selected" : ""}>25</option>
+          <option value="50" ${per === 50 ? "selected" : ""}>50</option>
+        </select>
+      </div>
+      <div class="scroll"><table class="stack"><tr><th>Posted</th><th>Clip</th><th>Creator</th><th>Account</th><th class="num">Views</th><th></th></tr>
+        ${rows}</table></div>
+      ${pager}
+    </div>`;
+  $("#pq").oninput = () => { clearTimeout(window._pt); window._pt = setTimeout(loadPosted, 300); };
+  $("#pplatform").onchange = loadPosted;
+  $("#pcreator").onchange = loadPosted;
+  $("#psort").onchange = loadPosted;
+  $("#pper").onchange = loadPosted;
+}
+
+function applyPostedFilters() {
+  const q = S.postedQ || {};
+  q.q = $("#pq").value;
+  q.platform = $("#pplatform").value;
+  q.creator = $("#pcreator").value;
+  q.sort = $("#psort").value;
+  q.per = parseInt(_("pper").value, 10) || 25;
+  q.page = 1;
+  loadPosted();
 }
 function tokenChart(daily) {
   const W = 1000, H = 220, pl = 64, pb = 26, pt = 10, n = daily.length, ch = H - pt - pb;
@@ -2015,7 +2224,7 @@ async function drawSettings() {
   try {
     if (tab === "ai") {
       const k = S.ai = await api("/api/ai");
-      body.innerHTML = `<section class="set-sec"><h2>AI</h2><p class="help">PeakCut uses an AI model to pick the moments worth clipping and to write hooks, titles and captions. Use your own key from any of these services. You pay that service directly. Without a key, clips are picked by loudness.</p>
+      body.innerHTML = `<section class="set-sec"><h2>AI</h2><p class="help">Clipverse uses an AI model to pick the moments worth clipping and to write hooks, titles and captions. Use your own key from any of these services. You pay that service directly. Without a key, clips are picked by loudness.</p>
           <div class="ai-state">${k.ready ? `<span class="pill ok">${ic("check")}Ready</span><span class="sub">${esc(k.label)} · ${esc(k.models[0] || "")}</span>` : `<span class="pill warn">Not set up</span><span class="sub">Choose a service, paste your key and pick a model.</span>`}</div>
           <div class="ai-form">
             <label class="f">AI service<select id="ai_provider">${k.providers.map(x => `<option value="${esc(x.id)}" ${x.id === k.provider ? "selected" : ""}>${esc(x.label)}</option>`).join("")}</select></label>
@@ -2029,7 +2238,7 @@ async function drawSettings() {
     }
     if (tab === "profile") {
       const joined = me.created_at ? new Date(me.created_at * 1000).toLocaleDateString([], {day: "numeric", month: "long", year: "numeric"}) : "";
-      body.innerHTML = `<section class="set-sec"><h2>Profile</h2><p class="help">This is how you appear in PeakCut.</p>
+      body.innerHTML = `<section class="set-sec"><h2>Profile</h2><p class="help">This is how you appear in Clipverse.</p>
         <div class="prof">${meAvatar(me).replace('class="avatar me-pic"', 'class="avatar prof-pic"')}<div><b>${esc(me.name)}</b><span>${esc(me.email)}</span></div></div>
         <dl class="kv"><div><dt>Email</dt><dd>${esc(me.email)} ${me.verified === false ? `<span class="pill warn">Not confirmed</span>` : `<span class="pill ok">Confirmed</span>`}</dd></div>
           <div><dt>Sign-in method</dt><dd>${me.google ? `Google${me.has_password ? " and password" : ""}` : "Email and password"}</dd></div>
@@ -2043,7 +2252,7 @@ async function drawSettings() {
             <label class="f">${me.has_password ? "New password" : "Password"}<input id="pw_new" type="password" autocomplete="new-password" placeholder="At least 8 characters"></label></div>
           <div class="row" style="margin-top:14px"><button class="btn primary" data-act="pwsave">${me.has_password ? "Change password" : "Set password"}</button>
             ${me.has_password ? `<a class="btn ghost" href="/reset">Forgot it?</a>` : ""}</div></section>
-        <section class="set-sec"><h2>Sessions</h2><p class="help">Sign out of PeakCut on this device. Changing your password signs out every other device too.</p>
+        <section class="set-sec"><h2>Sessions</h2><p class="help">Sign out of Clipverse on this device. Changing your password signs out every other device too.</p>
           <button class="btn" data-act="logout">${ic("signout")}Sign out</button></section>
         <section class="set-sec"><h2 style="color:var(--bad)">Delete account</h2><p class="help">Removes your account and everything in it for good: creators, recordings, videos, clips and history.</p>
           <button class="btn danger" data-act="delaccount">${ic("trash")}Delete my account</button></section>`;
@@ -2052,16 +2261,16 @@ async function drawSettings() {
       const s = S.stor = await api("/api/storage");
       const usedPct = s.total_gb ? Math.min(100, Math.max(1, 100 * (s.total_gb - s.free_gb) / s.total_gb)) : 0;
       const gb = n => `${Number(n).toLocaleString(undefined, {maximumFractionDigits: 1})} GB`;
-      body.innerHTML = `<section class="set-sec"><h2>Storage</h2><p class="help">Everything PeakCut keeps is in one folder: your videos, clips, recordings, creators and settings. You can open it, back it up, or move it to a drive with more room.</p>
-          ${s.full ? `<div class="note" style="margin:0 0 14px">${ic("warn")}<span><b>This drive is almost full, so PeakCut can't take new videos.</b> ${gb(s.free_gb)} free on ${esc(s.drive)}; it needs at least ${gb(s.min_free_gb)}. Free up space, or move the folder to another drive below.</span></div>` : ""}
-          ${s.pending ? `<div class="note" style="margin:0 0 14px">${ic("clock")}<span><b>The folder changes to ${esc(s.pending)} the next time PeakCut starts.</b> Close PeakCut and start it again. <button class="btn sm ghost" data-act="storcancel">Undo</button></span></div>` : ""}
+      body.innerHTML = `<section class="set-sec"><h2>Storage</h2><p class="help">Everything Clipverse keeps is in one folder: your videos, clips, recordings, creators and settings. You can open it, back it up, or move it to a drive with more room.</p>
+          ${s.full ? `<div class="note" style="margin:0 0 14px">${ic("warn")}<span><b>This drive is almost full, so Clipverse can't take new videos.</b> ${gb(s.free_gb)} free on ${esc(s.drive)}; it needs at least ${gb(s.min_free_gb)}. Free up space, or move the folder to another drive below.</span></div>` : ""}
+          ${s.pending ? `<div class="note" style="margin:0 0 14px">${ic("clock")}<span><b>The folder changes to ${esc(s.pending)} the next time Clipverse starts.</b> Close Clipverse and start it again. <button class="btn sm ghost" data-act="storcancel">Undo</button></span></div>` : ""}
           <div class="stor-path"><code>${esc(s.path)}</code>${s.local ? `<button class="btn" data-act="storopen">${ic("folder")}Open folder</button>` : ""}</div>
           <div class="stor-bar ${s.full ? "low" : ""}" role="img" aria-label="${Math.round(usedPct)}% of the drive is used"><i style="width:${usedPct}%"></i></div>
-          <div class="stor-nums"><span>PeakCut uses <b>${gb(s.used_gb)}</b></span><span><b>${gb(s.free_gb)}</b> free of ${gb(s.total_gb)} on ${esc(s.drive)}</span></div>
-          ${s.fixed ? `<p class="sub" style="margin-top:16px">This folder is set with PEAKCUT_DATA in the .env file. Change it there, or remove that line to choose it here.</p>`
-            : S.storOpen ? `<div class="stor-change"><label class="f">New folder<span class="with"><input id="stor_new" placeholder="For example D:\\PeakCut" spellcheck="false" value="${esc(S.storNew || "")}">${s.local ? `<button class="btn" type="button" data-act="storpick">Browse</button>` : ""}</span></label>
+          <div class="stor-nums"><span>Clipverse uses <b>${gb(s.used_gb)}</b></span><span><b>${gb(s.free_gb)}</b> free of ${gb(s.total_gb)} on ${esc(s.drive)}</span></div>
+          ${s.fixed ? `<p class="sub" style="margin-top:16px">This folder is set with CLIPVERSE_DATA in the .env file. Change it there, or remove that line to choose it here.</p>`
+            : S.storOpen ? `<div class="stor-change"><label class="f">New folder<span class="with"><input id="stor_new" placeholder="For example D:\\Clipverse" spellcheck="false" value="${esc(S.storNew || "")}">${s.local ? `<button class="btn" type="button" data-act="storpick">Browse</button>` : ""}</span></label>
                 <label class="ck"><input type="checkbox" id="stor_move" checked>Move everything that is in the current folder there too</label>
-                <p class="sub">The change happens the next time PeakCut starts, so nothing is moved while a video is being made.</p>
+                <p class="sub">The change happens the next time Clipverse starts, so nothing is moved while a video is being made.</p>
                 <div class="row"><button class="btn primary" data-act="storsave">Use this folder</button><button class="btn ghost" data-act="storchange">Cancel</button></div></div>`
             : `<div class="row" style="margin-top:16px"><button class="btn" data-act="storchange">Change folder</button></div>`}</section>`;
     }
@@ -2099,7 +2308,7 @@ async function drawSettings() {
             <p class="sub">To let people connect ${name}, register this server once with <a href="${g[0]}" target="_blank" rel="noopener">${g[1]}</a>. It takes about five minutes.</p>
             <ol>${g[2].map(x => `<li>${x}</li>`).join("")}</ol>
             <div class="copyrow"><code>${esc(st.redirect)}</code><button class="btn sm" data-act="copytext" data-t="${esc(st.redirect)}">${ic("copy")}Copy</button></div>
-            ${!st.https && pf !== "youtube" ? `<p class="warnline">${name} only accepts https addresses. Put PeakCut on a domain with https (or a tunnel) and set PEAKCUT_PUBLIC_URL to it first.</p>` : ""}
+            ${!st.https && pf !== "youtube" ? `<p class="warnline">${name} only accepts https addresses. Put Clipverse on a domain with https (or a tunnel) and set CLIPVERSE_PUBLIC_URL to it first.</p>` : ""}
             <div class="fields"><label class="f">${esc(st.id_label)}<input id="app_id" placeholder="${st.ready ? "Saved: " + esc(st.id_hint) + ". Paste a new one to replace it" : ""}" autocomplete="off" spellcheck="false"></label>
               <label class="f">${esc(st.secret_label)}<input id="app_secret" type="password" placeholder="${st.ready ? "Saved. Paste a new one to replace it" : ""}" autocomplete="off"></label></div>
             <p class="sub">${g[3]}</p>
@@ -2107,7 +2316,7 @@ async function drawSettings() {
         return `<div class="appcard"><span class="applogo" style="background:${bg}">${logo}</span>
           <div class="apptx"><b>${name}</b><span>${desc}</span>${listOf(accs)}</div><div class="appact">${act}</div>${panel}</div>`;
       };
-      body.innerHTML = `<section class="set-sec"><h2>Connected apps</h2><p class="help">Connect the accounts PeakCut posts clips to: press Connect, sign in on the platform's own page, and you're back here. PeakCut never sees your passwords. Then pick which accounts each creator posts to, in that creator's Setup.</p>
+      body.innerHTML = `<section class="set-sec"><h2>Connected apps</h2><p class="help">Connect the accounts Clipverse posts clips to: press Connect, sign in on the platform's own page, and you're back here. Clipverse never sees your passwords. Then pick which accounts each creator posts to, in that creator's Setup.</p>
         <div class="apps">
           ${card("youtube", "YouTube", yt, "#FF0000", "Post clips to your channel as Shorts.")}
           ${card("instagram", "Instagram", ig, "linear-gradient(45deg,#F58529,#DD2A7B,#8134AF)", "Post clips as Reels. Needs a Creator or Business account.")}
@@ -2141,6 +2350,7 @@ function drawClipDlg(full) {
         <h3>Post text</h3>
         <label class="f">Title<input data-f="title" value="${esc(c.title)}"></label>
         <label class="f">Description<textarea data-f="description" rows="2">${esc(c.description)}</textarea></label>
+        ${socialHtml(c)}
         <button class="btn" data-act="remake">${ic("scissors")}Save and re-make clip</button>
         <h3>Post it</h3>
         <div id="dposts" class="row" style="gap:4px"></div>
@@ -2309,6 +2519,10 @@ document.addEventListener("click", async e => {
       const c = jobOf(d.j).clips.find(x => x.id === d.c);
       await navigator.clipboard.writeText(`${c.title}\n\n${c.description}\n\n${(c.hashtags || []).map(h => "#" + h).join(" ")}`); return toast("Post text copied", "ok");
     }
+    if (a === "copytext" || b.dataset.copy) {
+      // The social metadata "Copy" buttons, and the tour's copy-to-clipboard command boxes.
+      await navigator.clipboard.writeText(b.dataset.copy || d.t || ""); return toast("Copied", "ok");
+    }
     if (a === "logout") { await api("/api/auth/logout", {method:"POST"}); location.href = "/"; return; }
     if (a === "pwsave") {
       await send("/api/auth/password", {current:$("#pw_cur")?.value || "", new:$("#pw_new").value});
@@ -2386,6 +2600,29 @@ document.addEventListener("click", async e => {
       toast("Recording stopped. Clips already made are kept.", "ok");
       api(`/api/live/${d.j}/stop`, {method:"POST"}).catch(e => toast(e.message, "bad")).finally(tick); return;
     }
+    if (a === "pausejob") {
+      const j = jobOf(d.j); if (!j) return;
+      if (!await ask("Pause this video?", "Clipverse stops looking for new moments and holds off making more clips. Clips already in progress are finished first. You can resume it any time.", "Pause", true)) return;
+      b.disabled = true;
+      try { await send(`/api/jobs/${d.j}/pause`, {}, "POST"); j.stage = "Paused"; toast("Video paused. Press Resume when you're ready.", "ok"); }
+      catch (e) { toast(e.message, "bad"); } finally { b.disabled = false; }
+      tick(); return;
+    }
+    if (a === "resumejob") {
+      const j = jobOf(d.j); if (!j) return;
+      b.disabled = true;
+      try { await send(`/api/jobs/${d.j}/resume`, {}, "POST"); j.stage = "Resuming"; toast("Resuming this video.", "ok"); }
+      catch (e) { toast(e.message, "bad"); } finally { b.disabled = false; }
+      tick(); return;
+    }
+    if (a === "stopjob") {
+      const j = jobOf(d.j); if (!j) return;
+      if (!await ask("Stop this video?", "Clipverse abandons the rest of the video. Clips already made are kept; the rest are not made. You can delete the whole video afterwards if you don't want them.", "Stop", true)) return;
+      b.disabled = true;
+      try { await send(`/api/jobs/${d.j}/stop`, {}, "POST"); j.stage = "Stopped by you"; toast("Stopped. Clips already made are kept.", "ok"); }
+      catch (e) { toast(e.message, "bad"); } finally { b.disabled = false; }
+      tick(); return;
+    }
     if (a === "clipnow") { await send(`/api/live/${d.j}/clip`, {seconds:Number(d.s)}); return toast(`Clipping the last ${d.s} seconds…`, "ok"); }
     if (a === "resendverify") {
       b.disabled = true;
@@ -2397,7 +2634,7 @@ document.addEventListener("click", async e => {
     if (a === "tour") return startTour();
     if (a === "settab") { e.preventDefault(); S.stab = d.k; remember("settings", d.k); return drawSettings(); }
     if (a === "updhow") return updateHow();
-    if (a === "updlater") { try { localStorage.setItem("peakcut_update_seen", S.status.update?.latest || ""); } catch {} return drawShell(); }
+    if (a === "updlater") { try { localStorage.setItem("clipverse_update_seen", S.status.update?.latest || ""); } catch {} return drawShell(); }
     if (a === "storopen") { await send("/api/storage/open"); return; }
     if (a === "storchange") { S.storOpen = !S.storOpen; S.storNew = ""; return drawSettings(); }
     if (a === "storpick") {
@@ -2407,7 +2644,7 @@ document.addEventListener("click", async e => {
     }
     if (a === "storsave") {
       const s = await send("/api/storage", {path: $("#stor_new").value, move: $("#stor_move").checked}, "PUT");
-      S.storOpen = false; toast("Saved. Close PeakCut and start it again to switch to the new folder.", "ok"); return drawSettings();
+      S.storOpen = false; toast("Saved. Close Clipverse and start it again to switch to the new folder.", "ok"); return drawSettings();
     }
     if (a === "storcancel") { await send("/api/storage", {cancel: true}, "PUT"); toast("Kept the current folder", "ok"); return drawSettings(); }
     if (a === "appsetup") { S.setupOpen = d.p && S.setupOpen !== d.p ? d.p : ""; return drawSettings(); }
@@ -2426,7 +2663,7 @@ document.addEventListener("click", async e => {
     if (a === "cdiscard") { drawCreatorForm(); return toast("Changes discarded"); }
     if (a === "pause") { await send("/api/settings", {paused:!S.overview.paused}, "PUT"); return loadOverview(); }
     if (a === "pcancel" || a === "pretry") { await api(`/api/posts/${d.id}/${a === "pcancel" ? "cancel" : "retry"}`, {method:"POST"}); return loadOverview(); }
-    if (a === "ssave") { await saveSettings(); toast("Saved", "ok"); return drawSettings(); }
+        if (a === "ssave") { await saveSettings(); toast("Saved", "ok"); return drawSettings(); }
     if (a === "plansave") {
       const p = {}; $$("#sform [data-plan]").forEach(i => { (p[i.dataset.plan] ??= {})[i.dataset.f] = Number(i.value); });
       await send("/api/settings", {plans:p}, "PUT"); S.status = await api("/api/status"); toast("Plans saved", "ok"); return drawSettings();
@@ -2467,8 +2704,8 @@ $("#main").addEventListener("scroll", () => $(".topbar").classList.toggle("stuck
   await tick();
   { const [v, tab] = location.pathname.startsWith("/app/") ? fromPath(location.pathname) : ["overview", "clips"]; go(v, tab, true); remember(S.view, S.ctab, "replace"); }
   try {  // a link pasted on the home page before signing up
-    const link = sessionStorage.getItem("peakcut_link");
-    if (link) { sessionStorage.removeItem("peakcut_link"); go("overview"); $("#url").value = link; onLink($("#url")); $("#url").focus(); toast("Your link is ready. Press Make clips.", "ok"); }
+    const link = sessionStorage.getItem("clipverse_link");
+    if (link) { sessionStorage.removeItem("clipverse_link"); go("overview"); $("#url").value = link; onLink($("#url")); $("#url").focus(); toast("Your link is ready. Press Make clips.", "ok"); }
   } catch {}
   loop();
   if (S.status.tour && !$("#formdlg").open) setTimeout(startTour, 500);   // once, the first time someone signs in

@@ -1,9 +1,10 @@
 """Job pipeline: get video -> audio -> transcript -> AI picks -> rendered clips. One heavy task at a time."""
 import collections
 import json
-import os
 import math
+import os
 import queue
+import re
 import shutil
 import threading
 import time
@@ -11,7 +12,42 @@ import traceback
 import uuid
 from pathlib import Path
 
-from . import brain, config, creators, ctx, load, media, render, roman, safe, transcribe, usage
+from . import brain, config, creators, ctx, load, live, media, render, roman, safe, transcribe, usage
+
+# Pause/stop signals, set by the owner from the dashboard. Checked at safe points in the pipeline, never in the
+# middle of a render or a download: a job that is paused simply waits for the next block, and one that is stopped
+# is abandoned (its clips are kept, the rest of the video is not made).
+_paused: set[str] = set()
+_stopped: set[str] = set()
+_paused_lock = threading.Lock()
+
+
+def pause(jid: str):
+    with _paused_lock:
+        _paused.add(jid)
+        _stopped.discard(jid)
+
+
+def resume(jid: str):
+    with _paused_lock:
+        _paused.discard(jid)
+        _stopped.discard(jid)
+
+
+def stop(jid: str):
+    with _paused_lock:
+        _stopped.add(jid)
+        _paused.discard(jid)
+
+
+def paused(jid: str) -> bool:
+    with _paused_lock:
+        return jid in _paused
+
+
+def stopped(jid: str) -> bool:
+    with _paused_lock:
+        return jid in _stopped
 
 class _FairQueue:
     """Whose video is next. Each person has their own line and the lines take turns, so someone who adds ten
@@ -108,10 +144,16 @@ _lock = threading.RLock()
 on_clip_ready: list = []   # callbacks (job, clip), run once when a clip first finishes
 
 DEFAULTS = {"max_clips": 6, "min_len": 15, "max_len": 60, "style": "bounce", "layout": "blur", "quality": 720,
-            "range_start": None, "range_end": None}
+            "range_start": None, "range_end": None, "aspect_ratio": "9:16", "length_preset": "30-60s",
+            "color_grade": "none"}
 
 
-LIMITS = {"max_clips": (1, 20), "min_len": (5, 120), "max_len": (10, 180), "quality": (360, 1080)}
+LIMITS = {"max_clips": (1, 500), "min_len": (5, 120), "max_len": (10, 180), "quality": (360, 1080)}
+
+# Output canvas by aspect ratio, and the clip length presets. Both are validated against these allowlists
+# when a job is created, so a bad value from the dashboard falls back to the default instead of crashing.
+ASPECT_RATIOS = {"9:16": (1080, 1920), "4:5": (1080, 1350), "1:1": (1080, 1080), "16:9": (1920, 1080)}
+LENGTH_PRESETS = {"15-30s": (15, 30), "30-60s": (30, 60), "60-90s": (60, 90), "90-180s": (90, 180)}
 
 
 def clean_options(options) -> dict:
@@ -127,6 +169,12 @@ def clean_options(options) -> dict:
             v = v if v in render.STYLES else DEFAULTS["style"]
         elif k == "layout":
             v = v if v in render.LAYOUTS else DEFAULTS["layout"]
+        elif k == "aspect_ratio":
+            v = v if v in ASPECT_RATIOS else DEFAULTS["aspect_ratio"]
+        elif k == "length_preset":
+            v = v if v in LENGTH_PRESETS else DEFAULTS["length_preset"]
+        elif k == "color_grade":
+            v = v if v in render.COLOR_GRADES else DEFAULTS["color_grade"]
         else:                                    # range_start, range_end: seconds into the video
             v = float(v)
             if not math.isfinite(v) or v < 0:
@@ -134,7 +182,23 @@ def clean_options(options) -> dict:
         out[k] = v
     if out.get("range_end") is not None and out["range_end"] <= out.get("range_start", 0):
         raise ValueError("The end of the chosen part must be after its start.")
+    # A length preset is a friendly name for a (min, max) window. It wins over the raw min_len/max_len only
+    # when the creator did not type those in directly, so an explicit "Shortest/Longest" still works.
+    preset = out.get("length_preset")
+    if preset in LENGTH_PRESETS and "min_len" not in options and "max_len" not in options:
+        lo, hi = LENGTH_PRESETS[preset]
+        out["min_len"], out["max_len"] = lo, hi
+    elif preset in LENGTH_PRESETS and out.get("min_len") is None and out.get("max_len") is None:
+        lo, hi = LENGTH_PRESETS[preset]
+        out["min_len"], out["max_len"] = lo, hi
     return out
+
+
+def _safe_context(context) -> str:
+    """The creator's optional "About this video" note: one line, no instructions, and short enough to fit in a prompt."""
+    if not isinstance(context, str):
+        return ""
+    return re.sub(r"[\x00-\x1f]+", " ", context).strip()[:600]
 
 
 def job_dir(jid) -> Path:
@@ -276,12 +340,13 @@ def running_now() -> int:
     return _q.running
 
 
-def create(source: dict, options: dict, enqueue=True, creator=None, kind="video") -> dict:
+def create(source: dict, options: dict, enqueue=True, creator=None, kind="video", context="") -> dict:
     jid = time.strftime("%Y%m%d-%H%M%S-") + uuid.uuid4().hex[:10]
     c = creators.get(creator) if creator else None
     if c:
         d = creators.root(c["id"]) / ("live" if kind == "live" else "videos") / jid
-        base = {**DEFAULTS, **{k: c[k] for k in ("max_clips", "min_len", "max_len", "style", "layout")}}
+        base = {**DEFAULTS, **{k: c[k] for k in ("max_clips", "min_len", "max_len", "style", "layout",
+                                                 "aspect_ratio", "length_preset", "color_grade")}}
     else:
         d, base, creator = config.user_dir(ctx.uid()) / "jobs" / jid, dict(DEFAULTS), None
     d.mkdir(parents=True)
@@ -290,7 +355,8 @@ def create(source: dict, options: dict, enqueue=True, creator=None, kind="video"
         opts["min_len"] = max(5, opts["max_len"] - 5)
     job = {"id": jid, "user": ctx.uid(), "kind": kind, "creator": creator, "dir": str(d), "created": time.time(), "source": source,
            "options": opts, "status": "queued", "stage": "Waiting", "progress": 0.0,
-           "title": source.get("name", ""), "uploader": "", "duration": 0, "clips": [], "error": None, "ai": {}}
+           "title": source.get("name", ""), "uploader": "", "duration": 0, "clips": [], "error": None, "ai": {},
+           "context": _safe_context(context)}
     with _lock:
         _jobs[jid] = job
         _by_user.setdefault(job["user"], {})[jid] = job
@@ -358,6 +424,14 @@ def request_render(jid, cid, changes: dict):
         new["layout"] = DEFAULTS["layout"]
     clip.update(new, status="queued")
     save(job)
+    # Live clips without a src need to go through live._render to build the src from the rolling buffer.
+    # Check if this is a live job and the clip has no src (or lost it).
+    if job.get("kind") == "live" and not clip.get("src"):
+        session = live.SESSIONS.get(jid)
+        if session:
+            # Submit to live worker so live._render builds the src from buffer segments
+            live.submit_live(lambda: session._render(clip))
+            return
     _q.put(("clip", jid, cid))
 
 
@@ -367,7 +441,18 @@ def render_one(job, clip, words):
     save(job)
     try:
         off = clip.get("src_offset", 0.0)
-        src = Path(clip["src"]) if clip.get("src") else Path(job["source_path"])
+        # Live clips get their `src` from the rolling buffer (see live._render); a live job has no
+        # `source_path` at all, so only fall back to it when the key is actually there.
+        src = Path(clip["src"]) if clip.get("src") else (Path(job["source_path"]) if "source_path" in job else None)
+        if src is None:
+            # Check if this is a live job whose buffer is gone
+            if job.get("kind") == "live":
+                 clip.update(status="error", error="This live recording has ended and its buffer was cleaned up. Clips cannot be re-rendered.")
+            else:
+                 clip.update(status="error", error="The clip's source video is no longer in the buffer. "
+                                                "Open it and press Save and re-make to try again.")
+            save(job)
+            return
         if not clip.get("src"):
             clip["end"] = min(clip["end"], job["duration"])
         local = dict(clip, start=clip["start"] - off, end=clip["end"] - off, hook=roman.to_roman(clip.get("hook") or ""))
@@ -386,7 +471,9 @@ def render_one(job, clip, words):
                 pass
         # the last word on it: whatever was said, nothing is drawn in Hindi or Urdu script
         near = [dict(w, s=w["s"] - off, e=w["e"] - off) for w in roman.words(raw)]
-        out = render.render_clip(src, d / "clips", clip["id"], local, near, job["width"], job["height"])
+        out = render.render_clip(src, d / "clips", clip["id"], local, near, job["width"], job["height"],
+                                 aspect=job["options"].get("aspect_ratio", "9:16"),
+                                 color_grade=job["options"].get("color_grade", "none"))
         clip.update(out, status="done", version=clip.get("version", 0) + 1, error=None)
         post = {k: clip[k] for k in ("title", "description", "hashtags", "hook", "start", "end", "score")}
         (d / "clips" / f"{clip['id']}.json").write_text(json.dumps(post, indent=1), encoding="utf-8")
@@ -405,7 +492,7 @@ def render_one(job, clip, words):
     save(job)
 
 
-CLIP_MINUTES = float(config.env("PEAKCUT_CLIP_MINUTES", "15"))     # the longest one clip may take to make
+CLIP_MINUTES = float(config.env("CLIPVERSE_CLIP_MINUTES", "15"))     # the longest one clip may take to make
 
 
 def _wait_for_clips(job, futures, began, workers):
@@ -573,6 +660,9 @@ def _run_job(job):
     began = {}      # clip id -> when work on it started
 
     def make(clip, words_now):
+        if stopped(job["id"]):
+            clip.update(status="error", error="Video stopped by you.")
+            return
         began[clip["id"]] = time.time()
         if src["type"] == "url" and (pieces or not whole_video()):
             _fetch_piece(job, clip, audio)
@@ -641,6 +731,13 @@ def _run_job(job):
     for bi, (a, b) in enumerate(blocks):
         if bi < done_blocks:
             continue                      # transcribed and checked by the AI before the restart
+        if stopped(job["id"]):
+            _set(job, stage="Stopped by you", progress=max(job["progress"], 0.14))
+            _abandon(job, t0, "Stopped by you")
+            return
+        while paused(job["id"]):
+            _set(job, stage="Paused", progress=max(job["progress"], 0.14))
+            time.sleep(1.0)
         shift = a / 16000
         where = f" (minute {round((a - lo) / 16000 / 60)} of {round(span / 60)})" if len(blocks) > 1 else ""
         if yt:
@@ -664,7 +761,8 @@ def _run_job(job):
         quota = max(1, math.ceil(left / (len(blocks) - bi)))
         s0 = int((a - lo) / 16000)
         found, ai = brain.find_clips(bw, db[s0: s0 + int((b - a) / 16000) + 1], (b - a) / 16000, job["title"],
-                                     job["uploader"], quota, int(o["min_len"]), int(o["max_len"]), notes.append)
+                                     job["uploader"], quota, int(o["min_len"]), int(o["max_len"]), notes.append,
+                                     context=job.get("context", ""))
         tokens += ai.get("tokens", 0)
         model = ai.get("model") or model
         if ai.get("note"):
@@ -702,6 +800,20 @@ def _run_job(job):
     except Exception:  # noqa: BLE001
         pass
     creators.log(job["creator"], f"Video finished with {len(clips)} clips in {round(time.time() - t0)}s: {job['title']}")
+
+
+def _abandon(job, t0, stage):
+    """A job that was stopped by the owner: keep the clips that were already made, abandon the rest."""
+    clips = job["clips"]
+    _set(job, status="done", stage=stage, progress=max(job["progress"], 0.14), took=round(time.time() - t0))
+    try:
+        from . import notices
+        name = job.get("title") or job["source"].get("name") or "your video"
+        notices.add(job.get("user"), "clips", f"{len(clips)} clip{'s' if len(clips) != 1 else ''} kept" if clips else "Nothing clip-worthy found",
+                    name, f"/app/creators/{job['creator']}" if job.get("creator") else "/app/videos")
+    except Exception:  # noqa: BLE001
+        pass
+    creators.log(job["creator"], f"Video stopped by you ({len(clips)} clip{'s' if len(clips) != 1 else ''} kept) in {round(time.time() - t0)}s: {job['title']}")
 
 
 def _worker(quick_only=False):

@@ -10,6 +10,14 @@ from .media import NO_WINDOW, run
 
 W, H = config.OUT_W, config.OUT_H
 
+# Output canvas by aspect ratio. 9:16 is the default vertical clip; the others are for feeds that want a
+# different frame (Instagram 4:5 and 1:1, or a landscape 16:9). Everything below scales with (W, H).
+ASPECT_DIMS = {"9:16": (1080, 1920), "4:5": (1080, 1350), "1:1": (1080, 1080), "16:9": (1920, 1080)}
+
+# How long a clip may be, by the length preset the creator picked. `min_len`/`max_len` are passed to the AI
+# and to `_snap()` so boundary snapping respects the chosen window.
+LENGTH_PRESETS = {"15-30s": (15, 30), "30-60s": (30, 60), "60-90s": (60, 90), "90-180s": (90, 180)}
+
 # ASS colours are &HBBGGRR. `size` is the ASS font size (line height); _Font turns it into real pixels.
 STYLES = {
     "bounce": {"label": "Bounce", "font": "Poppins ExtraBold", "size": 132, "base": "FFFFFF", "active": "00F0FF",
@@ -18,6 +26,12 @@ STYLES = {
              "strong": "00D7FF", "outline": 7, "pop": 114, "upper": True, "per": 2},
     "clean": {"label": "Clean", "font": "Poppins ExtraBold", "size": 100, "base": "FFFFFF", "active": "6BD7FF",
               "strong": "FFFFFF", "outline": 5, "pop": 106, "upper": False, "per": 4},
+    # Karaoke: each word fills with colour exactly as it is spoken, so the caption keeps time with the voice.
+    "karaoke": {"label": "Karaoke", "font": "Poppins ExtraBold", "size": 120, "base": "FFFFFF", "active": "FFE600",
+                "strong": "FFFFFF", "outline": 6, "pop": 108, "upper": True, "per": 3, "karaoke": True},
+    # Boxed: solid dark block behind the words, white on black, red when it is being said.
+    "boxed": {"label": "Boxed", "font": "Anton", "size": 140, "base": "FFFFFF", "active": "FF3C3C",
+              "strong": "FFFFFF", "outline": 9, "pop": 100, "upper": True, "per": 2, "box": True},
 }
 HOOK = {"font": "Poppins ExtraBold", "size": 96, "ink": "14100E", "box": "FFFFFF", "pad_x": 36, "pad_y": 22, "radius": 26,
         "max_w": 900}
@@ -108,20 +122,23 @@ def _groups(words, per):
     return out
 
 
-def geometry(src_w, src_h, layout):
-    """Where the video sits in the 1080x1920 frame, and where hook and captions go."""
+def geometry(src_w, src_h, layout, aspect="9:16"):
+    """Where the video sits in the (W, H) frame, and where hook and captions go. The canvas is whatever the
+    creator picked, so a 1:1 or 16:9 clip gets its own letterbox/pillarbox bands and caption zone."""
+    W, H = ASPECT_DIMS.get(aspect, ASPECT_DIMS["9:16"])
     if src_h >= src_w and layout != "crop":
         layout = "crop"  # already vertical or square: nothing to gain from a blurred fill
     if layout == "blur":
         fg_h = min(H, int(round(W * src_h / src_w / 2)) * 2)
     elif layout == "zoom":
-        fg_h = 1000
+        # Zoom keeps the foreground a fixed height relative to the frame, so it looks the same on every aspect.
+        fg_h = int(H * 0.52)
     else:
         fg_h = H
     top = (H - fg_h) // 2
     if layout == "crop":
-        return layout, fg_h, 300, 1380
-    return layout, fg_h, max(230, top - 190), min(1640, top + fg_h + 180)
+        return layout, fg_h, int(H * 0.16), int(H * 0.72)
+    return layout, fg_h, max(int(H * 0.12), top - int(H * 0.10)), min(int(H * 0.85), top + fg_h + int(H * 0.09))
 
 
 def _hook_events(hook, dur, y):
@@ -155,10 +172,21 @@ def _hook_events(hook, dur, y):
     return ev
 
 
-def build_ass(words, start, end, hook, style_name, highlight, hook_y, cap_y) -> str:
-    st = STYLES.get(style_name, STYLES["bounce"])
+def build_ass(words, start, end, hook, style_name, highlight, hook_y, cap_y, aspect="9:16") -> str:
+    W, H = ASPECT_DIMS.get(aspect, ASPECT_DIMS["9:16"])
+    # Font sizes are authored for the 1080x1920 vertical frame. On a shorter canvas (4:5, 1:1, 16:9) the
+    # captions and the hook shrink with the frame so they never sit on top of each other or run off the edge.
+    scale = H / 1920
+    st = {k: (int(round(v * scale)) if isinstance(v, int) else v) for k, v in STYLES.get(style_name, STYLES["bounce"]).items()}
+    hook = {k: (int(round(v * scale)) if isinstance(v, int) else v) for k, v in HOOK.items()}
     words = [dict(w, s=w["s"] - CAPTION_LEAD, e=w["e"] - CAPTION_LEAD) for w in words]
     strong = {_key(h) for h in highlight if _key(h)}
+    karaoke = bool(st.get("karaoke"))
+    boxed = bool(st.get("box"))
+    # Karaoke: the secondary colour is the fill, so \k sweeps it across the word as it is spoken.
+    # Boxed: BorderStyle 3 turns the outline into an opaque box behind the words.
+    border = 3 if boxed else 1
+    outline = 14 if boxed else st["outline"]
     head = f"""[Script Info]
 ScriptType: v4.00+
 PlayResX: {W}
@@ -168,7 +196,7 @@ ScaledBorderAndShadow: yes
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Cap,{st['font']},{st['size']},&H00{st['base']},&H00{st['base']},&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,{st['outline']},0,5,0,0,0,1
+Style: Cap,{st['font']},{st['size']},&H00{st['base']},&H00{st['active'] if karaoke else st['base']},&H00000000,&H00000000,0,0,0,0,100,100,0,0,{border},{outline},0,5,0,0,0,1
 Style: Hook,{HOOK['font']},{HOOK['size']},&H00{HOOK['ink']},&H00{HOOK['ink']},&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,5,0,0,0,1
 
 [Events]
@@ -216,22 +244,32 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             a = max(g_start, w["s"] - start)
             b = (g[i + 1]["s"] - start) if i + 1 < len(g) else g_end
             base = st["strong"] if _key(w["w"]) in strong else st["base"]
+            # Karaoke: the secondary colour sweeps across the word as it is spoken, so the caption keeps time
+            # with the voice. Boxed: a solid block sits behind the words (BorderStyle 3 + opaque outline).
+            say = f"\\c&H{st['active']}&" + (f"\\k{max(1, round((b - a) * 100))}" if karaoke else "")
+            say += "\\fscx94\\fscy94\\t(0,90,\\fscx{p}\\fscy{p})\\t(90,200,\\fscx{p - 5}\\fscy{p - 5})"
             if a - g_start >= 0.02:                                                   # waiting to be said
                 ev.append(f"Dialogue: 1,{_ts(g_start)},{_ts(a)},Cap,,0,0,0,,{{{pos}\\c&H{base}&}}{t}")
             if b - a >= 0.02:                                                         # being said: colour and a quick pop, in front
-                ev.append(f"Dialogue: 2,{_ts(a)},{_ts(b)},Cap,,0,0,0,,{{{pos}\\c&H{st['active']}&\\fscx94\\fscy94"
-                          f"\\t(0,90,\\fscx{p}\\fscy{p})\\t(90,200,\\fscx{p - 5}\\fscy{p - 5})}}{t}")
+                ev.append(f"Dialogue: 2,{_ts(a)},{_ts(b)},Cap,,0,0,0,,{{{pos}{say}}}{t}")
             if g_end - b >= 0.02:                                                     # said
                 ev.append(f"Dialogue: 1,{_ts(b)},{_ts(g_end)},Cap,,0,0,0,,{{{pos}\\c&H{base}&\\fscx{p - 5}\\fscy{p - 5}"
                           f"\\t(0,90,\\fscx100\\fscy100)}}{t}")
     return head + "\n".join(ev) + "\n"
 
 
-def _filter(layout, fg_h):
+def _filter(layout, fg_h, aspect="9:16"):
+    W, H = ASPECT_DIMS.get(aspect, ASPECT_DIMS["9:16"])
     if layout == "crop":
         return f"[0:v]fps={config.OUT_FPS},scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},setsar=1[v0];"
+    # The blurred background is a small version of the source, so it costs little and fills the whole frame.
+    bg_w, bg_h = 270, 480
+    if W >= H:                       # landscape: the band is wider than it is tall
+        bg_w, bg_h = 480, 270
+    elif W == H:                     # square
+        bg_w, bg_h = 360, 360
     return (f"[0:v]fps={config.OUT_FPS},split=2[a][b];"
-            f"[a]scale=270:480:force_original_aspect_ratio=increase,crop=270:480,boxblur=6:2,"
+            f"[a]scale={bg_w}:{bg_h}:force_original_aspect_ratio=increase,crop={bg_w}:{bg_h},boxblur=6:2,"
             f"scale={W}:{H},eq=brightness=-0.14:saturation=1.15[bg];"
             f"[b]scale={W}:{fg_h}:force_original_aspect_ratio=increase,crop={W}:{fg_h}[fg];"
             f"[bg][fg]overlay=0:(H-h)/2,setsar=1[v0];")
@@ -240,32 +278,54 @@ def _filter(layout, fg_h):
 _qsv_ok = None
 RENDER_SECONDS = 600      # one clip's video encode; far beyond normal, so a frozen encoder is stopped, not waited on
 
+# Color grading presets. Only built-in ffmpeg filters are used, and the selected string is looked up in this
+# map — a value that is not here becomes "" (no filter), so nothing untrusted ever reaches the filtergraph.
+COLOR_GRADES = {
+    "none": "",
+    "vibrant": "eq=contrast=1.08:saturation=1.22:brightness=0.02,unsharp=3:3:0.4",
+    "cinema": "eq=contrast=1.10:saturation=0.95,colorbalance=rs=0.04:gs=0.01:bs=-0.04:rm=0.03:bm=-0.03",
+    "crisp": "eq=contrast=1.14:saturation=1.06:gamma=0.98,unsharp=5:5:0.6",
+}
 
-def render_clip(src: Path, out_dir: Path, name: str, clip: dict, words: list, src_w: int, src_h: int) -> dict:
+
+def render_clip(src: Path, out_dir: Path, name: str, clip: dict, words: list, src_w: int, src_h: int,
+                aspect: str = "9:16", color_grade: str = "none") -> dict:
     """Writes <name>.mp4, <name>.jpg and <name>.ass into out_dir. Returns file names."""
     out_dir.mkdir(parents=True, exist_ok=True)
     start, end = clip["start"], clip["end"]
-    layout, fg_h, hook_y, cap_y = geometry(src_w, src_h, clip.get("layout", "blur"))
+    # ffmpeg runs with cwd set to a short work folder (see _render_in), so the source path must be
+    # absolute; a relative path stored in the job would resolve against the work folder and fail.
+    src = Path(src).resolve()
+    layout, fg_h, hook_y, cap_y = geometry(src_w, src_h, clip.get("layout", "blur"), aspect)
     ass = build_ass(words, start, end, clip.get("hook", ""), clip.get("style", "bounce"),
-                    clip.get("highlight_words", []), hook_y, cap_y)
+                    clip.get("highlight_words", []), hook_y, cap_y, aspect)
     # The clip is made in a short work folder and moved into place afterwards. The caption step of ffmpeg cannot
     # open files whose full path is longer than 260 characters on Windows, which a data folder deep inside other
     # folders easily reaches. Inside the work folder every name is short and relative (a drive colon would also
     # break the filter syntax).
     work = Path(tempfile.mkdtemp(prefix="pk"))
     try:
-        return _render_in(work, src, out_dir, name, start, end, layout, fg_h, ass)
+        return _render_in(work, src, out_dir, name, start, end, layout, fg_h, ass, aspect, color_grade)
     finally:
         shutil.rmtree(work, ignore_errors=True)
 
 
-def _render_in(work: Path, src: Path, out_dir: Path, name: str, start, end, layout, fg_h, ass: str) -> dict:
+def _render_in(work: Path, src: Path, out_dir: Path, name: str, start, end, layout, fg_h, ass: str,
+               aspect: str = "9:16", color_grade: str = "none") -> dict:
     global _qsv_ok
     (work / f"{name}.ass").write_text(ass, encoding="utf-8")
     (work / "f").mkdir()
     for f in config.FONTS_DIR.glob("*.ttf"):
         shutil.copyfile(f, work / "f" / f.name)
-    fc = _filter(layout, fg_h) + f"[v0]ass={name}.ass:fontsdir=f[v]"
+    # The color grade runs on the finished frame, before the subtitles are burned in, so captions keep their
+    # own colours. "none" (the default, and anything not in the map) leaves the chain untouched.
+    grade = COLOR_GRADES.get(color_grade, "")
+    fc = _filter(layout, fg_h, aspect)
+    if grade:
+        fc += f"[v0]{grade}[v0g];"
+        fc += f"[v0g]ass={name}.ass:fontsdir=f[v]"
+    else:
+        fc += f"[v0]ass={name}.ass:fontsdir=f[v]"
     base = ["ffmpeg", "-y", "-v", "error", "-ss", f"{start:.2f}", "-t", f"{end - start:.2f}", "-i", str(src),
             "-filter_complex", fc, "-map", "[v]", "-map", "0:a:0", "-af", "loudnorm=I=-14:TP=-1.5:LRA=11",
             "-c:a", "aac", "-b:a", "160k", "-ar", "48000", "-movflags", "+faststart", "-pix_fmt"]

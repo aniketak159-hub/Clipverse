@@ -1,4 +1,4 @@
-"""PeakCut web server. Run with:  python -m studio.server
+"""Clipverse web server. Run with:  python -m studio.server
 
 Public pages:  /  /login  /signup          The app:  /app  (signed-in users only)
 Everything under /api, /media and /oauth needs a session, except /api/auth/* and /api/public."""
@@ -34,7 +34,7 @@ def _quiet(fn):
         print(f"  {e}", flush=True)
 
 
-app = FastAPI(title="PeakCut", docs_url=None, redoc_url=None, openapi_url=None)
+app = FastAPI(title="Clipverse", docs_url=None, redoc_url=None, openapi_url=None)
 WEB = config.ROOT / "web"
 OPEN = ("/api/auth/", "/pub/", "/api/public", "/auth/google/", "/auth/verify", "/brand/", "/assets/", "/healthz", "/favicon.ico", "/robots.txt", "/sitemap.xml")
 PAGES = {"/": "landing.html", "/login": "auth.html", "/signup": "auth.html", "/reset": "reset.html",
@@ -52,7 +52,7 @@ BOOT = f"{int(time.time()) % 100000:x}"     # part of every sync token, so pages
 @app.on_event("startup")
 async def _more_threads():
     import anyio.to_thread
-    anyio.to_thread.current_default_thread_limiter().total_tokens = int(config.env("PEAKCUT_REQUEST_THREADS", "64"))
+    anyio.to_thread.current_default_thread_limiter().total_tokens = int(config.env("CLIPVERSE_REQUEST_THREADS", "64"))
 
 
 @app.on_event("startup")
@@ -66,14 +66,14 @@ def _startup():
     render.install_fonts()
     if _tools.missing():
         print("\n  " + _tools.HELP + "\n", flush=True)
-    if not transcribe.REMOTE and config.env("PEAKCUT_FETCH_MODEL", "1") != "0":     # the speech model: fetched now, in the background, if it was never downloaded
+    if not transcribe.REMOTE and config.env("CLIPVERSE_FETCH_MODEL", "1") != "0":     # the speech model: fetched now, in the background, if it was never downloaded
         from . import fetch_model
         threading.Thread(target=lambda: _quiet(fetch_model.ensure), daemon=True).start()
     jobs.start()
     live.start()
     posting.start()
     from . import updates
-    updates.start()                  # looks for a newer PeakCut every minute, in the background
+    updates.start()                  # looks for a newer Clipverse every minute, in the background
 
 
 # ================================================================ the gate: who is asking, and are they allowed
@@ -132,7 +132,7 @@ class Gate:
             # must have been asked for by its real address (a number, "localhost", or the address in settings),
             # so another website cannot reach it through a made-up name that points at this machine.
             if not _own_address(req.headers.get("host", "")):
-                return await deny(403, "Open PeakCut by its own address.")
+                return await deny(403, "Open Clipverse by its own address.")
             if path == "/" or path == "/reset" or path.startswith("/auth/"):
                 return await deny(303, "", redirect="/app")
             if path.startswith("/api/auth/") and path != "/api/auth/me":
@@ -229,7 +229,7 @@ class Compress:
 app.add_middleware(Compress)
 
 
-# Cloudflare's published address ranges (cloudflare.com/ips). PEAKCUT_CDN_RANGES replaces them if they ever change.
+# Cloudflare's published address ranges (cloudflare.com/ips). CLIPVERSE_CDN_RANGES replaces them if they ever change.
 _CDN_RANGES = None
 
 
@@ -237,7 +237,7 @@ def _from_cdn(addr: str) -> bool:
     global _CDN_RANGES
     import ipaddress
     if _CDN_RANGES is None:
-        ranges = config.env("PEAKCUT_CDN_RANGES") or (
+        ranges = config.env("CLIPVERSE_CDN_RANGES") or (
             "173.245.48.0/20 103.21.244.0/22 103.22.200.0/22 103.31.4.0/22 141.101.64.0/18 108.162.192.0/18 "
             "190.93.240.0/20 188.114.96.0/20 197.234.240.0/22 198.41.128.0/17 162.158.0.0/15 104.16.0.0/13 "
             "104.24.0.0/14 172.64.0.0/13 131.0.72.0/22 2400:cb00::/32 2606:4700::/32 2803:f800::/32 2405:b500::/32 "
@@ -252,20 +252,20 @@ def _from_cdn(addr: str) -> bool:
 
 def _ip(request: Request) -> str:
     """The visitor's address, used for rate limits. The connection's own address, or the one the proxy in front
-    reports (PEAKCUT_TRUST_PROXY). If that connection comes from the CDN, the CDN's header names the real visitor
-    (PEAKCUT_CLIENT_IP_HEADER). The header is believed only when the CDN really sent the request, so nobody can
+    reports (CLIPVERSE_TRUST_PROXY). If that connection comes from the CDN, the CDN's header names the real visitor
+    (CLIPVERSE_CLIENT_IP_HEADER). The header is believed only when the CDN really sent the request, so nobody can
     pick their own address by sending it themselves."""
     fwd = request.headers.get("x-forwarded-for", "")
-    peer = (fwd.split(",")[0].strip() if fwd and config.env("PEAKCUT_TRUST_PROXY") else "") or (request.client.host if request.client else "")
-    named = config.env("PEAKCUT_CLIENT_IP_HEADER")
+    peer = (fwd.split(",")[0].strip() if fwd and config.env("CLIPVERSE_TRUST_PROXY") else "") or (request.client.host if request.client else "")
+    named = config.env("CLIPVERSE_CLIENT_IP_HEADER")
     if named and request.headers.get(named) and _from_cdn(peer):
         return request.headers[named].split(",")[0].strip()[:64]
     return peer
 
 
 def _own_address(host: str) -> bool:
-    """Is this the address PeakCut is really reached by? A number (127.0.0.1, 192.168.1.20), "localhost", or the
-    host in PEAKCUT_PUBLIC_URL."""
+    """Is this the address Clipverse is really reached by? A number (127.0.0.1, 192.168.1.20), "localhost", or the
+    host in CLIPVERSE_PUBLIC_URL."""
     import ipaddress
     name = host.strip().lower()
     name = name[1:name.index("]")] if name.startswith("[") and "]" in name else name.rsplit(":", 1)[0] if ":" in name else name
@@ -348,9 +348,9 @@ def reset_page():
 
 
 LEGAL = {
-    "privacy": ("Privacy Policy", "How PeakCut collects, uses and protects your data, including Google user data, cookies and your privacy rights."),
-    "terms": ("Terms of Service", "The terms for using PeakCut, the AI clipping tool for streams and videos: accounts, availability and liability."),
-    "acceptable-use": ("Acceptable Use Policy", "What you may and may not do with PeakCut, the AI stream clipping tool."),
+    "privacy": ("Privacy Policy", "How Clipverse collects, uses and protects your data, including Google user data, cookies and your privacy rights."),
+    "terms": ("Terms of Service", "The terms for using Clipverse, the AI clipping tool for streams and videos: accounts, availability and liability."),
+    "acceptable-use": ("Acceptable Use Policy", "What you may and may not do with Clipverse, the AI stream clipping tool."),
 }
 
 
@@ -365,9 +365,9 @@ def legal_page(request: Request):
     contact = config.CONTACT_EMAIL
     who = (f'<a href="mailto:{_h.escape(contact)}">{_h.escape(contact)}</a>' if contact
            else "the contact details on our website")
-    name = _h.escape(config.LEGAL_NAME or "PeakCut")
+    name = _h.escape(config.LEGAL_NAME or "Clipverse")
     law = (f"the laws of {_h.escape(config.LEGAL_COUNTRY)}" if config.LEGAL_COUNTRY
-           else "the laws of the country where PeakCut's operator is established")
+           else "the laws of the country where Clipverse's operator is established")
     out = (_LEGAL_HTML or (WEB / "legal.html").read_text(encoding="utf-8"))
     for k, v in {"{{CONTACT}}": who, "{{PAGE}}": page, "{{PAGE_PATH}}": page, "{{SITE}}": _h.escape(config.PUBLIC_URL),
                  "{{NAME}}": name, "{{LAW}}": law, "{{TITLE}}": title, "{{DESC}}": desc}.items():
@@ -708,7 +708,8 @@ def create_from_link(body: dict = Body(...)):
     try:
         with _create_lock:
             _job_slots()
-            job = jobs.create({"type": "url", "url": url, "name": url}, body.get("options") or {}, creator=creator)
+            job = jobs.create({"type": "url", "url": url, "name": url}, body.get("options") or {}, creator=creator,
+                              context=str(body.get("context") or ""))
     except (ValueError, TypeError) as e:
         raise HTTPException(400, str(e) if isinstance(e, ValueError) else "Those options aren't valid.")
     seen = media._PREVIEWS.get(url)  # already looked up while the user was typing: show it straight away
@@ -721,7 +722,8 @@ def create_from_link(body: dict = Body(...)):
 
 
 @app.post("/api/upload")
-def create_from_file(file: UploadFile = File(...), options: str = Form("{}"), creator: str = Form("")):
+def create_from_file(file: UploadFile = File(...), options: str = Form("{}"), creator: str = Form(""),
+                     context: str = Form("")):
     _need_verified()
     _job_slots()
     name = re.sub(r"[^\w.\- ]", "_", Path(file.filename or "video.mp4").name)[:120]
@@ -749,7 +751,8 @@ def create_from_file(file: UploadFile = File(...), options: str = Form("{}"), cr
         try:
             with _create_lock:
                 _job_slots()
-                job = jobs.create({"type": "file", "path": str(tmp), "name": name}, opts, enqueue=False, creator=creator or None)
+                job = jobs.create({"type": "file", "path": str(tmp), "name": name}, opts, enqueue=False,
+                                  creator=creator or None, context=context)
         except (ValueError, TypeError):
             raise HTTPException(400, "Those options aren't valid.")
         _disk.pop(ctx.uid(), None)
@@ -820,6 +823,7 @@ def upload_start(body: dict = Body(...)):
     if creator and not creators.get(creator):
         raise HTTPException(404, "No such creator")
     opts = body.get("options") if isinstance(body.get("options"), dict) else {}
+    context = str(body.get("context") or "")
     try:
         jobs.clean_options(opts)                 # refused now rather than after the whole file has been sent
     except (ValueError, TypeError):
@@ -838,7 +842,7 @@ def upload_start(body: dict = Body(...)):
     d = _up_root() / f"up-{upid}"
     d.mkdir()
     meta = {"user": ctx.uid(), "name": name, "ext": ext, "size": size, "part": part, "parts": -(-size // part),
-            "options": opts, "creator": creator, "t": time.time()}
+            "options": opts, "creator": creator, "context": str(body.get("context") or ""), "t": time.time()}
     (d / "meta.json").write_text(json.dumps(meta), encoding="utf-8")
     return {"id": upid, "part": part, "parts": meta["parts"]}
 
@@ -885,7 +889,7 @@ def upload_finish(upid: str):
             with _create_lock:
                 _job_slots()
                 job = jobs.create({"type": "file", "path": "", "name": meta["name"]}, meta["options"], enqueue=False,
-                                  creator=meta["creator"] or None)
+                                  creator=meta["creator"] or None, context=meta.get("context", ""))
         except (ValueError, TypeError):
             raise HTTPException(400, "Those options aren't valid.")
         dest = jobs.job_dir(job["id"]) / ("source" + meta["ext"])
@@ -925,6 +929,32 @@ def rerender(jid: str, cid: str, body: dict = Body(...)):
     except (ValueError, TypeError) as e:
         raise HTTPException(400, str(e))
     return jobs.public(job)
+
+
+@app.post("/api/jobs/{jid}/pause")
+def pause_job(jid: str):
+    job = _job_or_404(jid)
+    if job["status"] not in ("queued", "running"):
+        raise HTTPException(400, "This video isn't running")
+    jobs.pause(jid)
+    ctx.bump()
+    return {"ok": True}
+
+
+@app.post("/api/jobs/{jid}/resume")
+def resume_job(jid: str):
+    job = _job_or_404(jid)
+    jobs.resume(jid)
+    ctx.bump()
+    return {"ok": True}
+
+
+@app.post("/api/jobs/{jid}/stop")
+def stop_job(jid: str):
+    job = _job_or_404(jid)
+    jobs.stop(jid)
+    ctx.bump()
+    return {"ok": True}
 
 
 @app.delete("/api/jobs/{jid}")
@@ -974,7 +1004,7 @@ def clips_zip(ids: str = ""):
     except ValueError as e:
         raise HTTPException(400, str(e))
     from starlette.background import BackgroundTask
-    return FileResponse(f, filename=f"peakcut-clips-{len(pairs)}.zip", media_type="application/zip",
+    return FileResponse(f, filename=f"clipverse-clips-{len(pairs)}.zip", media_type="application/zip",
                         headers={"Cache-Control": "private, no-store"}, background=BackgroundTask(lambda: f.unlink(missing_ok=True)))
 
 
@@ -1038,7 +1068,7 @@ def email_preview(request: Request, kind: str = "verify"):
     from . import mailer
     _admin(request)
     if kind == "reset":
-        page = mailer.preview("Reset your password", "Someone asked to reset the password for this PeakCut account. If that was you, choose a new one below.",
+        page = mailer.preview("Reset your password", "Someone asked to reset the password for this Clipverse account. If that was you, choose a new one below.",
                               "Choose a new password", config.PUBLIC_URL + "/reset?t=example",
                               "The link works for one hour. If you didn't ask for this, ignore this email and your password stays the same.")
     else:
@@ -1052,10 +1082,10 @@ def test_email(request: Request):
     from . import mailer
     me_ = _admin(request)
     if not mailer.ready():
-        raise HTTPException(400, "No email service is set up yet. Add the PEAKCUT_SMTP settings to .env first.")
-    mailer.send(me_.email, "PeakCut test email", "Your emails are working",
-                "This is a test from your PeakCut server. Account emails like this one will now reach people.",
-                "Open PeakCut", config.PUBLIC_URL + "/app", "You can ignore this message.")
+        raise HTTPException(400, "No email service is set up yet. Add the CLIPVERSE_SMTP settings to .env first.")
+    mailer.send(me_.email, "Clipverse test email", "Your emails are working",
+                "This is a test from your Clipverse server. Account emails like this one will now reach people.",
+                "Open Clipverse", config.PUBLIC_URL + "/app", "You can ignore this message.")
     return {"sent_to": me_.email}
 
 
@@ -1366,11 +1396,11 @@ def public_clip(token: str):
     return FileResponse(f, media_type="video/mp4", headers={"Cache-Control": "private, no-store"})
 
 
-# ---------------------------------------------------------------- where PeakCut keeps everything (Settings, Storage)
+# ---------------------------------------------------------------- where Clipverse keeps everything (Settings, Storage)
 def _on_this_computer(request: Request) -> bool:
-    """Is the person sitting at the computer PeakCut runs on? Only then can a folder window be opened for them."""
+    """Is the person sitting at the computer Clipverse runs on? Only then can a folder window be opened for them."""
     host = request.client.host if request.client else ""
-    return host in ("127.0.0.1", "::1", "localhost") and not config.env("PEAKCUT_TRUST_PROXY")
+    return host in ("127.0.0.1", "::1", "localhost") and not config.env("CLIPVERSE_TRUST_PROXY")
 
 
 @app.get("/api/storage")
@@ -1385,7 +1415,7 @@ def storage_open(request: Request):
     from . import storage
     _admin(request)
     if not _on_this_computer(request):
-        raise HTTPException(400, "The folder can only be opened on the computer PeakCut runs on.")
+        raise HTTPException(400, "The folder can only be opened on the computer Clipverse runs on.")
     try:
         storage.open_folder()
     except OSError as e:
@@ -1398,7 +1428,7 @@ def storage_pick(request: Request):
     from . import storage
     _admin(request)
     if not _on_this_computer(request):
-        raise HTTPException(400, "Type the folder's path instead: a folder window can only be shown on the computer PeakCut runs on.")
+        raise HTTPException(400, "Type the folder's path instead: a folder window can only be shown on the computer Clipverse runs on.")
     return {"path": storage.pick_folder()}
 
 
@@ -1444,7 +1474,19 @@ def add_posts(body: dict = Body(...)):
 
 
 @app.post("/api/posts/{pid}/{action}")
-def post_action(pid: str, action: str):
+def post_action(pid: str, action: str, body: dict = Body(default=None)):
+    if action == "reschedule":
+        try:
+            due_at = float((body or {}).get("due_at", 0))
+        except (TypeError, ValueError):
+            raise HTTPException(400, "due_at must be a Unix timestamp.")
+        if due_at <= time.time():
+            raise HTTPException(400, "The new time must be in the future.")
+        try:
+            posting.reschedule(pid, due_at)
+        except ValueError as e:
+            raise HTTPException(400, str(e))
+        return {"ok": True}
     try:
         {"cancel": posting.cancel, "retry": posting.retry}[action](pid)
     except KeyError:
@@ -1452,6 +1494,18 @@ def post_action(pid: str, action: str):
     except ValueError as e:
         raise HTTPException(400, str(e))
     return {"ok": True}
+
+
+@app.get("/api/posts/posted")
+def posted_posts(page: int = 1, per: int = 25, q: str = "", platform: str = "", sort: str = "newest", creator: str = ""):
+    return posting.posted(page=page, per=per, q=q, platform=platform, sort=sort, creator=creator)
+
+
+@app.post("/api/posts/refresh-views")
+def refresh_post_views(body: dict = Body(default={})):
+    post_ids = body.get("ids") if isinstance(body.get("ids"), list) else None
+    count = posting.refresh_views(post_ids)
+    return {"ok": True, "refreshed": count}
 
 
 @app.post("/api/alerts/test")
@@ -1465,7 +1519,7 @@ def test_alert():
         auth_problem = str(e)
     if auth_problem:
         raise HTTPException(429, auth_problem)
-    problems = alerts.send("PeakCut: test message. Alerts are working.")
+    problems = alerts.send("Clipverse: test message. Alerts are working.")
     if problems:
         raise HTTPException(400, "; ".join(problems))
     return {"ok": True}
@@ -1523,18 +1577,18 @@ def admin_delete_user(request: Request, uid: str, body: dict = Body(...)):
 
 
 def main():
-    print(f"\n  PeakCut is running:  {config.PUBLIC_URL}\n")
+    print(f"\n  Clipverse is running:  {config.PUBLIC_URL}\n")
     if not config.ACCOUNTS and (config.HTTPS or config.HOST not in ("127.0.0.1", "localhost", "::1")):
-        print("  Sign-in is off, so anyone who can reach this address can use PeakCut and its AI key.\n"
-              "  On a server other people can reach, set PEAKCUT_ACCOUNTS=1 in .env.\n", flush=True)
-    if config.env("PEAKCUT_AUTO_RELOAD") == "1":
+        print("  Sign-in is off, so anyone who can reach this address can use Clipverse and its AI key.\n"
+              "  On a server other people can reach, set CLIPVERSE_ACCOUNTS=1 in .env.\n", flush=True)
+    if config.env("CLIPVERSE_AUTO_RELOAD") == "1":
         # restart by itself whenever the server code changes (pages in web/ never need a restart)
         uvicorn.run("studio.server:app", host=config.HOST, port=config.PORT, log_level="warning", backlog=4096, reload=True,
                     reload_dirs=[str(config.ROOT / "studio")], reload_includes=["*.py"],
-                    proxy_headers=bool(config.env("PEAKCUT_TRUST_PROXY")), forwarded_allow_ips="*")
+                    proxy_headers=bool(config.env("CLIPVERSE_TRUST_PROXY")), forwarded_allow_ips="*")
         return
     uvicorn.run(app, host=config.HOST, port=config.PORT, log_level="warning", backlog=4096,
-                proxy_headers=bool(config.env("PEAKCUT_TRUST_PROXY")), forwarded_allow_ips="*")
+                proxy_headers=bool(config.env("CLIPVERSE_TRUST_PROXY")), forwarded_allow_ips="*")
 
 
 if __name__ == "__main__":

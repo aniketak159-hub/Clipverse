@@ -30,3 +30,7 @@ __pycache__/
 .venv/
 venv/
 .pytest_cache/
+
+# ---- runtime state and local assets
+sync.json
+peakcut-screenshot.jpg
